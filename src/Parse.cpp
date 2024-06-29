@@ -1,22 +1,24 @@
 
 #include "Parse.h"
 
-void VUI::ParseObjects(nlohmann::json uiObject, std::string typeString, void (*parseFunction)(nlohmann::json))
+std::vector<VUI::UIElement*> VUI::ParseObjects(nlohmann::json uiObject, std::string typeString, VUI::UIElement* (*parseFunction)(nlohmann::json))
 {
+	std::vector<UIElement*> elements;
 	if (!uiObject.at("ui").contains(typeString))
-		return;
+		return std::vector<UIElement*>();
 	else if (!uiObject.at("ui").at(typeString).is_array())
 	{
 		std::string errorString = "Malformed json: \"" + typeString + "\" was not an array";
-		VUI::Log(ERROR_MINOR, errorString.c_str());
-		return;
+		VUI::Log(VUI::ERROR_MINOR, errorString.c_str());
+		return std::vector<UIElement*>();
 	}
 
 	bool parseError = false;
 	for (nlohmann::json element : uiObject.at("ui").at(typeString))
 	{
-		parseFunction(element);
+		elements.push_back(parseFunction(element));
 	}
+	return elements;
 }
 
 bool VUI::HasValidInt(nlohmann::json element, std::string propertyName)
@@ -78,55 +80,70 @@ VUI::Math::vec2 inline VUI::GetVec2(nlohmann::json vecProperty)
 	return { (double)vecProperty[0],(double)vecProperty[1] };
 }
 
-void VUI::ParseGenericProperties(nlohmann::json element, VUI::UIElement& newElement)
+void VUI::ParseGenericProperties(nlohmann::json element, VUI::UIElement* newElement)
 {
+	if (element.contains("id"))
+	{
+		if (element.at("id").is_string())
+			newElement->id = element.at("id");
+		else
+			newElement->id = "element" + std::to_string(rand());
+	}
+	else
+		newElement->id = "element" + std::to_string(rand());
+
 	if (HasValidVec2(element, "position"))
-		newElement.position = GetVec2(element.at("position"));
+		newElement->position = GetVec2(element.at("position"));
 	else
-		newElement.position = Math::vec2(0.0);
-	
+		newElement->position = std::any_cast<Math::vec2>(propertyDefaults.at("position"));
+
 	if (HasValidVec2(element, "dimensions"))
-		newElement.dimensions = GetVec2(element.at("dimensions"));
+		newElement->dimensions = GetVec2(element.at("dimensions"));
 	else
-		newElement.dimensions = Math::vec2(1.0);
-	
+		newElement->dimensions = std::any_cast<Math::vec2>(propertyDefaults.at("dimensions"));
+
 	if (HasValidColor(element, "color"))
-		newElement.color = GetColor(element.at("color"));
+		newElement->color = GetColor(element.at("color"));
 	else
-		newElement.color = Math::u8vec4(255);
+		newElement->color = std::any_cast<Math::u8vec4>(propertyDefaults.at("color"));
 
 	if (HasValidInt(element, "layer"))
-		newElement.layer = element.at("layer");
+		newElement->layer = element.at("layer");
 	else
-		newElement.layer = 0;
+		newElement->layer = std::any_cast<int32_t>(propertyDefaults.at("layer"));
 }
 
-void VUI::ParseRectangle(nlohmann::json element)
+VUI::UIElement* VUI::ParseRectangle(nlohmann::json element)
 {
-	UIElement newElement{};
+	UIElement* newElement = new UIElement();
 	ParseGenericProperties(element, newElement);
+	return newElement;
 }
 
-void VUI::ParseTexture(nlohmann::json element)
+VUI::UIElement* VUI::ParseTexture(nlohmann::json element)
 {
-	UIElement newElement{};
+	UIElement* newElement = new UIElement();
 	ParseGenericProperties(element, newElement);
+	return newElement;
 }
 
-void VUI::ParseButton(nlohmann::json element)
+VUI::UIElement* VUI::ParseButton(nlohmann::json element)
 {
-	UIElement newElement{};
+	UIElement* newElement = new UIElement();
 	ParseGenericProperties(element, newElement);
+	return newElement;
 }
 
-void VUI::ParseText(nlohmann::json element)
+VUI::UIElement* VUI::ParseText(nlohmann::json element)
 {
-	UIElement newElement{};
+	UIElement* newElement = new UIElement();
 	ParseGenericProperties(element, newElement);
+	return newElement;
 }
 
-void VUI::ParseSlider(nlohmann::json element)
+VUI::UIElement* VUI::ParseSlider(nlohmann::json element)
 {
-	UIElement newElement{};
+	UIElement* newElement = new UIElement();
 	ParseGenericProperties(element, newElement);
+	return newElement;
 }

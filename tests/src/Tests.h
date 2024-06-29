@@ -1,6 +1,13 @@
 #pragma once
 
-#include <angle/angle_gl.h>
-#include "EGL/egl.h"
-#include "GLFW/glfw3.h"
-#include <iostream>
+#include "VidentiUI.h"
+#include "Parse.h"
+
+namespace VUI
+{
+	namespace Tests
+	{
+		bool LoadParseTest(UIHandler& uiHandler);
+		bool UnloadParseTest(UIHandler& uiHandler);
+	}
+}

@@ -20,15 +20,18 @@ FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download
 FetchContent_MakeAvailable(json)
 
 # Add source
-add_library (VidentiUI "VidentiUI.cpp" "VidentiUI.h" "Parse.cpp" "Parse.h")
+add_library (VidentiUI "src/VidentiUI.cpp" "src/VidentiUI.h" "src/Parse.cpp" "src/Parse.h" "src/Parse.h")
 target_include_directories(VidentiUI PUBLIC ${CMAKE_HOME_DIRECTORY}/include)
 target_link_libraries(VidentiUI PRIVATE nlohmann_json::nlohmann_json)
+set_property(TARGET VidentiUI PROPERTY CXX_STANDARD 20)
 
 # For tests
 if (VIDENTI_TESTS)
 set (VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_HOME_DIRECTORY}/tests)
-add_executable(Tests "tests/src/Tests.cpp" "tests/src/Tests.h")
+add_executable(Tests "tests/src/main.cpp" "tests/src/main.h" "tests/src/Tests.cpp" "tests/src/Tests.h")
 
+target_include_directories(Tests PUBLIC ${CMAKE_HOME_DIRECTORY}/src)
+target_include_directories(Tests PUBLIC ${CMAKE_HOME_DIRECTORY}/include)
 target_include_directories(Tests PUBLIC ${CMAKE_HOME_DIRECTORY}/tests/include)
 target_include_directories(Tests PUBLIC ${CMAKE_HOME_DIRECTORY}/tests/include/angle)
 
@@ -37,4 +40,7 @@ target_link_directories(Tests PUBLIC ${CMAKE_HOME_DIRECTORY}/lib)
 target_link_libraries(Tests PUBLIC glfw3)
 target_link_libraries(Tests PUBLIC libEGL)
 target_link_libraries(Tests PUBLIC libGLESv2)
+target_link_libraries(Tests PUBLIC VidentiUI)
+
+set_property(TARGET Tests PROPERTY CXX_STANDARD 20)
 endif()

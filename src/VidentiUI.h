@@ -1,8 +1,9 @@
 ﻿#pragma once
 
 #include <vector>
-#include <nlohmann/json.h>
 #include <string>
+#include <unordered_map>
+#include <any>
 
 namespace VUI
 {
@@ -14,7 +15,7 @@ namespace VUI
 			double y;
 			inline vec2 operator+(vec2 const& rhs)
 			{
-				return { x + rhs.x, y + rhs.y};
+				return { x + rhs.x, y + rhs.y };
 			}
 			inline vec2 operator-(vec2 const& rhs)
 			{
@@ -69,6 +70,10 @@ namespace VUI
 				u8vec4 newVec{ uint8_t((float)r * (rhs.r / 255.0f)), uint8_t((float)g + (rhs.g / 255.0f)), uint8_t((float)b + (rhs.b / 255.0f)), uint8_t((float)a + (rhs.a / 255.0f)) };
 				return newVec;
 			}
+			bool operator==(u8vec4 const& rhs)
+			{
+				return r == rhs.r && g == rhs.g && b == rhs.b && a == rhs.a;
+			}
 			u8vec4(const uint8_t shade)
 			{
 				r = shade;
@@ -102,30 +107,55 @@ namespace VUI
 		ERROR_FATAL
 	};
 
-	static std::string currMessage;
-	static bool isMessage;
-	static uint8_t currErrorCode;
-	struct Message
-	{
-		std::string message;
-		uint8_t errorCode;
-	};
-	Message FetchMessage();
-
-	void StartFrame();
-	void Render();
-	void EndFrame();
-
-	void ParseUI(const char* filepath);
-	void Log(ErrorCode, const char* message);
-
 	struct UIElement
 	{
+		std::string id;
 		Math::vec2 position;
 		Math::vec2 dimensions;
 		Math::u8vec4 color;
 		int32_t layer;
 	};
 
-	static std::vector<UIElement*> elements;
+	struct Message
+	{
+		std::string message;
+		uint8_t errorCode;
+	};
+
+	static std::string currMessage;
+	static bool isMessage;
+	static uint8_t currErrorCode;
+
+	Message FetchMessage();
+	void Log(ErrorCode, const char* message);
+
+	class UIHandler
+	{
+	public:
+
+		void StartFrame();
+		void Render();
+		void EndFrame();
+
+		void ParseUI(const char* filepath);
+
+		std::vector<UIElement*> elements;
+
+		inline UIElement* FindElement(std::string id)
+		{
+			for (UIElement* element : elements)
+			{
+				if (element->id == id)
+					return element;
+			}
+			return nullptr;
+		}
+	};
+	const std::unordered_map<std::string, std::any> propertyDefaults
+	{
+		{"dimensions",std::any(Math::vec2(0.1,0.1))},
+		{"position",std::any(Math::vec2(0.0,0.0))},
+		{"layer",std::any(int32_t(0))},
+		{"color",std::any(Math::u8vec4(255,255,255,255))}
+	};
 }

@@ -1,0 +1,23 @@
+{
+  "ui": {
+    "buttons": [
+      {
+        "id": "button1",
+        "position": [ 0.5, 0.5 ],
+        "dimensions": [ 0.1, 0.1 ]
+      }
+    ],
+    "textures": [
+
+    ],
+    "sliders": [
+
+    ],
+    "rectangles": [
+
+    ],
+    "text": [
+
+    ]
+  }
+}

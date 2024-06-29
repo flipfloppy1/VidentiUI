@@ -1,24 +1,26 @@
 ﻿#include "VidentiUI.h"
+#include "Parse.h"
+#include <nlohmann/json.h>
 #include <fstream>
 #include <iostream>
 #include <string>
 
-void VUI::Render()
+void VUI::UIHandler::Render()
 {
 
 }
 
-void VUI::StartFrame()
+void VUI::UIHandler::StartFrame()
 {
 
 }
 
-void VUI::EndFrame()
+void VUI::UIHandler::EndFrame()
 {
 
 }
 
-void VUI::ParseUI(const char* filepath)
+void VUI::UIHandler::ParseUI(const char* filepath)
 {
 	std::ifstream f;
 	f.open(filepath);
@@ -30,8 +32,10 @@ void VUI::ParseUI(const char* filepath)
 		return;
 	}
 
-	nlohmann::json uiObject = nlohmann::json::parse(std::istreambuf_iterator<char>(f.seekg(f.beg)), std::istreambuf_iterator<char>(f.seekg(f.end)));
+	nlohmann::json uiObject = nlohmann::json::parse(std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>(0));
 	
+	f.close();
+
 	if (!uiObject.contains("ui"))
 	{
 		VUI::Log(ERROR_MINOR, "UI json empty, returning with empty UI");
@@ -39,7 +43,18 @@ void VUI::ParseUI(const char* filepath)
 		return;
 	}
 
-	f.close();
+	std::vector<UIElement*> newElements;
+
+	newElements = ParseObjects(uiObject, "buttons", ParseButton);
+	elements.insert(elements.end(), newElements.begin(), newElements.end());
+	newElements = ParseObjects(uiObject, "text", ParseText);
+	elements.insert(elements.end(), newElements.begin(), newElements.end());
+	newElements = ParseObjects(uiObject, "rectangles", ParseRectangle);
+	elements.insert(elements.end(), newElements.begin(), newElements.end());
+	newElements = ParseObjects(uiObject, "sliders", ParseSlider);
+	elements.insert(elements.end(), newElements.begin(), newElements.end());
+	newElements = ParseObjects(uiObject, "textures", ParseTexture);
+	elements.insert(elements.end(), newElements.begin(), newElements.end());
 }
 
 void VUI::Log(ErrorCode errorCode, const char* message)

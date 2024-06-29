@@ -21,7 +21,7 @@ FetchContent_MakeAvailable(json)
 
 # Add source
 add_library (VidentiUI "VidentiUI.cpp" "VidentiUI.h" "Parse.cpp" "Parse.h")
-target_include_directories(VidentiUI PUBLIC ${CMAKE_HOME_DIRECTORY})
+target_include_directories(VidentiUI PUBLIC ${CMAKE_HOME_DIRECTORY}/include)
 target_link_libraries(VidentiUI PRIVATE nlohmann_json::nlohmann_json)
 
 # For tests
@@ -29,8 +29,8 @@ if (VIDENTI_TESTS)
 set (VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_HOME_DIRECTORY}/tests)
 add_executable(Tests "tests/src/Tests.cpp" "tests/src/Tests.h")
 
-target_include_directories(Tests PUBLIC ${CMAKE_HOME_DIRECTORY}/include)
-target_include_directories(Tests PUBLIC ${CMAKE_HOME_DIRECTORY}/include/angle)
+target_include_directories(Tests PUBLIC ${CMAKE_HOME_DIRECTORY}/tests/include)
+target_include_directories(Tests PUBLIC ${CMAKE_HOME_DIRECTORY}/tests/include/angle)
 
 target_link_directories(Tests PUBLIC ${CMAKE_HOME_DIRECTORY}/lib)
 

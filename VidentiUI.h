@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <vector>
+#include <nlohmann/json.h>
 #include <string>
 
 namespace VUI

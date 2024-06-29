@@ -63,12 +63,12 @@ namespace VUI
 			uint8_t b;
 			uint8_t a;
 
-			u8vec4 operator+(u8vec4 const& rhs)
+			u8vec4 operator*(u8vec4 const& rhs)
 			{
-				u8vec4 newVec{ r + rhs.r, g + rhs.g, b + rhs.b, a + rhs.a };
+				u8vec4 newVec{ uint8_t((float)r * (rhs.r / 255.0f)), uint8_t((float)g + (rhs.g / 255.0f)), uint8_t((float)b + (rhs.b / 255.0f)), uint8_t((float)a + (rhs.a / 255.0f)) };
 				return newVec;
 			}
-			u8vec4(const int shade)
+			u8vec4(const uint8_t shade)
 			{
 				r = shade;
 				g = shade;
@@ -84,10 +84,10 @@ namespace VUI
 			}
 			u8vec4()
 			{
-				r = 0;
-				g = 0;
-				b = 0;
-				a = 0;
+				r = (uint8_t)0;
+				g = (uint8_t)0;
+				b = (uint8_t)0;
+				a = (uint8_t)0;
 			}
 		};
 	}

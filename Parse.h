@@ -1,6 +1,6 @@
 #pragma once
 
-#include "nlohmann/json.hpp"
+#include "json.h"
 #include "VidentiUI.h"
 
 namespace VUI

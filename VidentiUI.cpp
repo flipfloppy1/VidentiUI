@@ -1,5 +1,5 @@
 ﻿#include "VidentiUI.h"
-#include "nlohmann/json.hpp"
+#include "json.h"
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -30,8 +30,8 @@ void VUI::ParseUI(const char* filepath)
 		elements.clear();
 		return;
 	}
-	
-	nlohmann::json uiObject = nlohmann::json::parse(f.beg,f.end);
+
+	nlohmann::json uiObject = nlohmann::json::parse(std::istreambuf_iterator<char>(f.seekg(f.beg)), std::istreambuf_iterator<char>(f.seekg(f.end)));
 	
 	if (!uiObject.contains("ui"))
 	{

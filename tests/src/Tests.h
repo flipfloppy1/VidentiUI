@@ -1,13 +1,16 @@
 #pragma once
 
 #include "VidentiUI.h"
-#include "Parse.h"
+#include "VidentiParse.h"
+#include "VidentiAngleRenderer.h"
 
 namespace VUI
 {
 	namespace Tests
 	{
-		bool LoadParseTest(UIHandler& uiHandler);
-		bool UnloadParseTest(UIHandler& uiHandler);
+		bool LoadParseTest(VidentiHandler& uiHandler);
+		bool UnloadParseTest(VidentiHandler& uiHandler);
+		bool LoadRendererTest(VidentiHandler& uiHandler);
+		bool UnloadRendererTest(VidentiHandler& uiHandler);
 	}
 }

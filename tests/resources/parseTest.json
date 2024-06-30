@@ -3,8 +3,10 @@
     "buttons": [
       {
         "id": "button1",
-        "position": [ 0.5, 0.5 ],
-        "dimensions": [ 0.1, 0.1 ]
+        "position": [ 0.45, 0.45 ],
+        "dimensions": [ 0.1, 0.1 ],
+        "ratioTransform": [false,true],
+        "texture": "resources/textures/button.png"
       }
     ],
     "textures": [

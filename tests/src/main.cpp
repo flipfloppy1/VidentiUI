@@ -78,12 +78,12 @@ static GLFWwindow* Load()
 	glDebugMessageCallback(printDebug, NULL);
 #endif
 
-	glFrontFace(GL_CCW);
-	glEnable(GL_CULL_FACE);
+	//glFrontFace(GL_CCW);
+	//glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	(PFNGLCLIPCONTROLEXTPROC)(GL_LOWER_LEFT_EXT, GL_ZERO_TO_ONE_EXT);
+	glClipControlEXT(GL_LOWER_LEFT_EXT, GL_ZERO_TO_ONE_EXT);
 
 	return window;
 }
@@ -129,9 +129,16 @@ static void Update(std::chrono::seconds runTime)
 	}
 }
 
-static void Render()
+static void Render(GLFWwindow* window)
 {
+	glClearColor(1.0, 1.0, 1.0, 1.0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	uiHandler.StartFrame();
+	uiHandler.Render();
+	uiHandler.EndFrame();
+
+	glfwSwapBuffers(window);
 }
 
 static void Input()
@@ -153,10 +160,9 @@ int main()
 	{
 		Update(runTime);
 		Input();
-		Render();
+		Render(window);
 		runTime = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - startTime);
 	}
-	
 	Unload(window);
 }
 

@@ -2,10 +2,12 @@
 
 #include <nlohmann/json.h>
 #include "VidentiUI.h"
+#include "VidentiMath.h"
 
 namespace VUI
 {
 	bool HasValidVec2(nlohmann::json element, std::string propertyName);
+	bool HasValidVec2Bool(nlohmann::json element, std::string propertyName);
 	bool HasValidColor(nlohmann::json element, std::string propertyName);
 	bool HasValidInt(nlohmann::json element, std::string propertyName);
 

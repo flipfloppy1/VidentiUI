@@ -11,11 +11,19 @@
 #include "Tests.h"
 
 static std::chrono::seconds runTime;
-static const int numTests = 1;
 
-VUI::UIHandler uiHandler;
+// first = Load, second = Unload
+static std::pair<bool (*)(VUI::VidentiHandler&), bool (*)(VUI::VidentiHandler&)> testFunctions[]
+{
+	{VUI::Tests::LoadRendererTest, VUI::Tests::UnloadRendererTest},
+	{VUI::Tests::LoadParseTest, VUI::Tests::UnloadParseTest}
+};
 
-static int testWaitSeconds = 3;
+static constexpr const int numTests = std::size(testFunctions);
+
+VUI::VidentiHandler uiHandler;
+
+static int testWaitSeconds = 2;
 
 // first = loadingPassed, second = unloadingPassed
 static std::pair<bool, bool> testsPassed[numTests];
@@ -23,9 +31,5 @@ static std::pair<bool, bool> testsPassed[numTests];
 // first = started, second = ended
 static std::pair<bool,bool> testsRun[numTests]; 
 
-// first = Load, second = Unload
-static std::pair<bool (*)(VUI::UIHandler&), bool (*)(VUI::UIHandler&)> testFunctions[numTests]
-{
-	{VUI::Tests::LoadParseTest, VUI::Tests::UnloadParseTest}
-};
+
 static bool shouldQuit = false;

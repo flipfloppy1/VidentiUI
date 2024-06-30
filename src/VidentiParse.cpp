@@ -1,5 +1,5 @@
 
-#include "Parse.h"
+#include "VidentiParse.h"
 
 std::vector<VUI::UIElement*> VUI::ParseObjects(nlohmann::json uiObject, std::string typeString, VUI::UIElement* (*parseFunction)(nlohmann::json))
 {
@@ -45,6 +45,21 @@ bool VUI::HasValidVec2(nlohmann::json element, std::string propertyName)
 	return false;
 }
 
+bool VUI::HasValidVec2Bool(nlohmann::json element, std::string propertyName)
+{
+	if (element.contains(propertyName))
+	{
+		if (element.at(propertyName).is_array())
+		{
+			if (element.at(propertyName).size() == 2)
+			{
+				return element.at(propertyName)[0].is_boolean() && element.at(propertyName)[1].is_boolean();
+			}
+		}
+	}
+	return false;
+}
+
 bool VUI::HasValidColor(nlohmann::json element, std::string propertyName)
 {
 	if (element.contains(propertyName))
@@ -77,7 +92,7 @@ VUI::Math::u8vec4 inline VUI::GetColor(nlohmann::json colorProperty)
 
 VUI::Math::vec2 inline VUI::GetVec2(nlohmann::json vecProperty)
 {
-	return { (double)vecProperty[0],(double)vecProperty[1] };
+	return { vecProperty[0], vecProperty[1] };
 }
 
 void VUI::ParseGenericProperties(nlohmann::json element, VUI::UIElement* newElement)
@@ -91,6 +106,16 @@ void VUI::ParseGenericProperties(nlohmann::json element, VUI::UIElement* newElem
 	}
 	else
 		newElement->id = "element" + std::to_string(rand());
+
+	if (element.contains("texture"))
+	{
+		if (element.at("texture").is_string())
+			newElement->texture = element.at("texture");
+		else
+			newElement->texture = "";
+	}
+	else
+		newElement->texture = "";
 
 	if (HasValidVec2(element, "position"))
 		newElement->position = GetVec2(element.at("position"));
@@ -111,39 +136,50 @@ void VUI::ParseGenericProperties(nlohmann::json element, VUI::UIElement* newElem
 		newElement->layer = element.at("layer");
 	else
 		newElement->layer = std::any_cast<int32_t>(propertyDefaults.at("layer"));
+
+	if (HasValidVec2Bool(element, "ratioTransform"))
+	{
+		newElement->ratioTransform[0] = element.at("ratioTransform")[0];
+		newElement->ratioTransform[1] = element.at("ratioTransform")[1];
+	}
+	else
+	{
+		newElement->ratioTransform[0] = std::any_cast<bool>(propertyDefaults.at("ratioTransform"));
+		newElement->ratioTransform[1] = std::any_cast<bool>(propertyDefaults.at("ratioTransform"));
+	}
 }
 
 VUI::UIElement* VUI::ParseRectangle(nlohmann::json element)
 {
-	UIElement* newElement = new UIElement();
+	UIElement* newElement = new Rectangle();
 	ParseGenericProperties(element, newElement);
 	return newElement;
 }
 
 VUI::UIElement* VUI::ParseTexture(nlohmann::json element)
 {
-	UIElement* newElement = new UIElement();
+	UIElement* newElement = new Texture();
 	ParseGenericProperties(element, newElement);
 	return newElement;
 }
 
 VUI::UIElement* VUI::ParseButton(nlohmann::json element)
 {
-	UIElement* newElement = new UIElement();
+	UIElement* newElement = new Button();
 	ParseGenericProperties(element, newElement);
 	return newElement;
 }
 
 VUI::UIElement* VUI::ParseText(nlohmann::json element)
 {
-	UIElement* newElement = new UIElement();
+	UIElement* newElement = new Text();
 	ParseGenericProperties(element, newElement);
 	return newElement;
 }
 
 VUI::UIElement* VUI::ParseSlider(nlohmann::json element)
 {
-	UIElement* newElement = new UIElement();
+	UIElement* newElement = new Slider();
 	ParseGenericProperties(element, newElement);
 	return newElement;
 }

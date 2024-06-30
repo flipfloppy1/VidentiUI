@@ -20,7 +20,7 @@ FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download
 FetchContent_MakeAvailable(json)
 
 # Add source
-add_library (VidentiUI "src/VidentiUI.cpp" "src/VidentiUI.h" "src/Parse.cpp" "src/Parse.h" "src/Parse.h")
+add_library (VidentiUI "src/VidentiUI.cpp" "src/VidentiUI.h" "src/VidentiParse.cpp" "src/VidentiParse.h" "src/VidentiRenderer.h" "src/VidentiRenderer.cpp" "src/VidentiMath.h")
 target_include_directories(VidentiUI PUBLIC ${CMAKE_HOME_DIRECTORY}/include)
 target_link_libraries(VidentiUI PRIVATE nlohmann_json::nlohmann_json)
 set_property(TARGET VidentiUI PROPERTY CXX_STANDARD 20)
@@ -28,10 +28,12 @@ set_property(TARGET VidentiUI PROPERTY CXX_STANDARD 20)
 # For tests
 if (VIDENTI_TESTS)
 set (VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_HOME_DIRECTORY}/tests)
-add_executable(Tests "tests/src/main.cpp" "tests/src/main.h" "tests/src/Tests.cpp" "tests/src/Tests.h")
+add_executable(Tests "tests/src/main.cpp" "tests/src/main.h" "tests/src/Tests.cpp" "tests/src/Tests.h" "renderers/angle/VidentiAngleRenderer.cpp" "renderers/angle/VidentiAngleRenderer.h" "renderers/include/stb/stb.cpp")
 
 target_include_directories(Tests PUBLIC ${CMAKE_HOME_DIRECTORY}/src)
 target_include_directories(Tests PUBLIC ${CMAKE_HOME_DIRECTORY}/include)
+target_include_directories(Tests PUBLIC ${CMAKE_HOME_DIRECTORY}/renderers/include)
+target_include_directories(Tests PUBLIC ${CMAKE_HOME_DIRECTORY}/renderers/angle)
 target_include_directories(Tests PUBLIC ${CMAKE_HOME_DIRECTORY}/tests/include)
 target_include_directories(Tests PUBLIC ${CMAKE_HOME_DIRECTORY}/tests/include/angle)
 

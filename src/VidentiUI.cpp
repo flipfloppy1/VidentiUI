@@ -1,7 +1,7 @@
 ﻿
 #include "VidentiUI.h"
 #include "VidentiParse.h"
-#include <nlohmann/json.h>
+#include <nlohmann/json.hpp>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -164,12 +164,12 @@ std::vector<VUI::Renderer::UIVertex> VUI::Slider::GenVerts()
 	else
 		transformDimensions.y = dimensions.y;
 
-	vertices.push_back(Renderer::UIVertex(position * 2.0f - 1.0f, color, { 0.0f,0.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x,position.y + transformDimensions.y / 2.0f } *2.0f - 1.0f, color, { 0.0f,1.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x + transformDimensions.x / 2.0f,position.y } *2.0f - 1.0f, color, { 1.0f,0.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x + transformDimensions.x / 2.0f,position.y } *2.0f - 1.0f, color, { 1.0f,0.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x,position.y + transformDimensions.y / 2.0f } *2.0f - 1.0f, color, { 0.0f,1.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x + transformDimensions.x / 2.0f,position.y + transformDimensions.y / 2.0f } *2.0f - 1.0f, color, { 1.0f,1.0f }));
+	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f) }, color, { 0.0f,1.0f }));
+	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f + transformDimensions.y * 2.0f) }, color, { 0.0f,0.0f }));
+	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + transformDimensions.x * 2.0f, -(position.y * 2.0f - 1.0f + transformDimensions.y * 2.0f) }, color, { 1.0f,0.0f }));
+	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + transformDimensions.x * 2.0f, -(position.y * 2.0f - 1.0f + transformDimensions.y * 2.0f) }, color, { 1.0f,0.0f }));
+	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + transformDimensions.x * 2.0f, -(position.y * 2.0f - 1.0f) }, color, { 1.0f,1.0f }));
+	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f) }, color, { 0.0f,1.0f }));
 	return vertices;
 }
 
@@ -187,12 +187,12 @@ std::vector<VUI::Renderer::UIVertex> VUI::Texture::GenVerts()
 	else
 		transformDimensions.y = dimensions.y;
 
-	vertices.push_back(Renderer::UIVertex(position * 2.0f - 1.0f, color, { 0.0f,0.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x,position.y + transformDimensions.y / 2.0f } *2.0f - 1.0f, color, { 0.0f,1.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x + transformDimensions.x / 2.0f,position.y } *2.0f - 1.0f, color, { 1.0f,0.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x + transformDimensions.x / 2.0f,position.y } *2.0f - 1.0f, color, { 1.0f,0.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x,position.y + transformDimensions.y / 2.0f } *2.0f - 1.0f, color, { 0.0f,1.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x + transformDimensions.x / 2.0f,position.y + transformDimensions.y / 2.0f } *2.0f - 1.0f, color, { 1.0f,1.0f }));
+	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f) }, color, { 0.0f,1.0f }));
+	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f + transformDimensions.y * 2.0f) }, color, { 0.0f,0.0f }));
+	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + transformDimensions.x * 2.0f, -(position.y * 2.0f - 1.0f + transformDimensions.y * 2.0f) }, color, { 1.0f,0.0f }));
+	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + transformDimensions.x * 2.0f, -(position.y * 2.0f - 1.0f + transformDimensions.y * 2.0f) }, color, { 1.0f,0.0f }));
+	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + transformDimensions.x * 2.0f, -(position.y * 2.0f - 1.0f) }, color, { 1.0f,1.0f }));
+	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f) }, color, { 0.0f,1.0f }));
 	return vertices;
 }
 
@@ -210,12 +210,12 @@ std::vector<VUI::Renderer::UIVertex> VUI::Rectangle::GenVerts()
 	else
 		transformDimensions.y = dimensions.y;
 
-	vertices.push_back(Renderer::UIVertex(position * 2.0f - 1.0f, color, { 0.0f,0.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x,position.y + transformDimensions.y / 2.0f } *2.0f - 1.0f, color, { 0.0f,1.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x + transformDimensions.x / 2.0f,position.y } *2.0f - 1.0f, color, { 1.0f,0.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x + transformDimensions.x / 2.0f,position.y } *2.0f - 1.0f, color, { 1.0f,0.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x,position.y + transformDimensions.y / 2.0f } *2.0f - 1.0f, color, { 0.0f,1.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x + transformDimensions.x / 2.0f,position.y + transformDimensions.y / 2.0f } *2.0f - 1.0f, color, { 1.0f,1.0f }));
+	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f) }, color, { 0.0f,1.0f }));
+	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f + transformDimensions.y * 2.0f) }, color, { 0.0f,0.0f }));
+	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + transformDimensions.x * 2.0f, -(position.y * 2.0f - 1.0f + transformDimensions.y * 2.0f) }, color, { 1.0f,0.0f }));
+	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + transformDimensions.x * 2.0f, -(position.y * 2.0f - 1.0f + transformDimensions.y * 2.0f) }, color, { 1.0f,0.0f }));
+	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + transformDimensions.x * 2.0f, -(position.y * 2.0f - 1.0f) }, color, { 1.0f,1.0f }));
+	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f) }, color, { 0.0f,1.0f }));
 	return vertices;
 }
 
@@ -233,11 +233,11 @@ std::vector<VUI::Renderer::UIVertex> VUI::Text::GenVerts()
 	else
 		transformDimensions.y = dimensions.y;
 
-	vertices.push_back(Renderer::UIVertex(position * 2.0f - 1.0f, color, { 0.0f,0.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x,position.y + transformDimensions.y / 2.0f } *2.0f - 1.0f, color, { 0.0f,1.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x + transformDimensions.x / 2.0f,position.y } *2.0f - 1.0f, color, { 1.0f,0.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x + transformDimensions.x / 2.0f,position.y } *2.0f - 1.0f, color, { 1.0f,0.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x,position.y + transformDimensions.y / 2.0f } *2.0f - 1.0f, color, { 0.0f,1.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x + transformDimensions.x / 2.0f,position.y + transformDimensions.y / 2.0f } *2.0f - 1.0f, color, { 1.0f,1.0f }));
+	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f) }, color, { 0.0f,1.0f }));
+	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f + transformDimensions.y * 2.0f) }, color, { 0.0f,0.0f }));
+	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + transformDimensions.x * 2.0f, -(position.y * 2.0f - 1.0f + transformDimensions.y * 2.0f) }, color, { 1.0f,0.0f }));
+	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + transformDimensions.x * 2.0f, -(position.y * 2.0f - 1.0f + transformDimensions.y * 2.0f) }, color, { 1.0f,0.0f }));
+	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + transformDimensions.x * 2.0f, -(position.y * 2.0f - 1.0f) }, color, { 1.0f,1.0f }));
+	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f) }, color, { 0.0f,1.0f }));
 	return vertices;
 }

@@ -71,7 +71,7 @@ static GLFWwindow* Load()
 	glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 	glfwSetWindowAspectRatio(window, 16, 9);
 	
-	(PFNGLVIEWPORTPROC)(0, 0, windowWidth, windowHeight);
+	glViewport(0, 0, windowWidth, windowHeight);
 
 #ifdef _DEBUG
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);

@@ -3,7 +3,7 @@
 #include "VidentiRenderer.h"
 #include "VidentiUI.h"
 #include "angle_gl.h"
-#include "stb/stb_image.h"
+#include "stb_image.h"
 #include <fstream>
 
 namespace VUI

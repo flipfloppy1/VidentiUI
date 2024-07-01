@@ -1,6 +1,6 @@
 #pragma once
 
-#include <nlohmann/json.h>
+#include <nlohmann/json.hpp>
 #include "VidentiUI.h"
 #include "VidentiMath.h"
 

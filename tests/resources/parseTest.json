@@ -3,14 +3,22 @@
     "buttons": [
       {
         "id": "button1",
-        "position": [ 0.45, 0.45 ],
-        "dimensions": [ 0.1, 0.1 ],
+        "position": [ 0.41, 0.41 ],
+        "dimensions": [ 0.18, 0.12 ],
         "ratioTransform": [false,true],
-        "texture": "resources/textures/button.png"
+        "texture": "resources/textures/button.png",
+        "color": [ 255, 255, 255, 255 ]
       }
     ],
     "textures": [
-
+      {
+        "id": "background",
+        "position": [ 0.0, 0.0 ],
+        "dimensions": [ 1.0, 1.0 ],
+        "ratioTransform": [ false, false ],
+        "texture": "resources/textures/background.png",
+        "color": [ 255, 255, 255, 255 ]
+      }
     ],
     "sliders": [
 

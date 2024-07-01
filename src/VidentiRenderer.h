@@ -34,13 +34,13 @@ namespace VUI
 		class VidentiRenderer
 		{
 		public:
-			virtual TextureID LoadTexture(std::string filepath) = NULL;
-			virtual void GenElements(std::vector<UIElement*> elements) = NULL;
-			virtual ElementVertices GenVerts(UIElement* element) = NULL;
-			virtual void Render() = NULL;
-			virtual void Init() = NULL;
-			virtual void CompileRender() = NULL;
-			virtual void CleanCompiledRender() = NULL;
+			virtual TextureID LoadTexture(std::string filepath) = 0;
+			virtual void GenElements(std::vector<UIElement*> elements) = 0;
+			virtual ElementVertices GenVerts(UIElement* element) = 0;
+			virtual void Render() = 0;
+			virtual void Init() = 0;
+			virtual void CompileRender() = 0;
+			virtual void CleanCompiledRender() = 0;
 			void SetWindowDimensions(VUI::Math::vec2 dimensions)
 			{
 				windowDimensions = dimensions;

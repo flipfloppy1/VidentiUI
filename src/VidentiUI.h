@@ -36,7 +36,7 @@ namespace VUI
 		std::string texture;
 		bool ratioTransform[2];
 		int32_t layer;
-		virtual std::vector<Renderer::UIVertex> GenVerts() = NULL;
+		virtual std::vector<Renderer::UIVertex> GenVerts() = 0;
 	protected:
 		VidentiHandler* uiHandler;
 	};

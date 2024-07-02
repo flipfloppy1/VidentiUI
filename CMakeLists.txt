@@ -1,4 +1,4 @@
-﻿cmake_minimum_required (VERSION 3.25)
+﻿cmake_minimum_required (VERSION 3.22)
 include(FetchContent)
 include(ExternalProject)
 
@@ -10,32 +10,50 @@ endif()
 
 project("VidentiUI")
 
-# Set properties
+message("VidentiUI: Setting build properties...")
 add_compile_definitions(GLFW_INCLUDE_NONE GL_GLEXT_PROTOTYPES)
 set(BUILD_SHARED_LIBS OFF)
 set_property(GLOBAL PROPERTY CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+message("VidentiUI: Set build properties")
 
-
+message("VidentiUI: Adding dependencies...")
 FetchContent_Declare(
 	json 
 	GIT_REPOSITORY https://github.com/nlohmann/json.git
 	GIT_TAG 9cca280a4d0ccf0c08f47a99aa71d1b0e52f8d03 # v3.11.3
 )
+
 FetchContent_Declare(
 	angle
 	URL https://github.com/google/angle/archive/4f23429a1f094d34b7878ba3cb3e3327f2bfa142.zip # latest as of 01/07/2024
 )
+
 FetchContent_Declare(
 	glfw
 	URL https://github.com/glfw/glfw/releases/download/3.4/glfw-3.4.zip
 )
+
 FetchContent_Declare(
 	stb
 	GIT_REPOSITORY https://github.com/nothings/stb.git
 	GIT_TAG 013ac3beddff3dbffafd5177e7972067cd2b5083 # latest as of 01/07/2024
 )
-FetchContent_MakeAvailable(json stb)
+
+if (WIN32)
+FetchContent_Declare(
+	luajit
+	URL https://github.com/LuaJIT/LuaJIT/archive/refs/tags/v2.0.5.zip
+	BUILD_COMMAND ""
+)
+else()
+FetchContent_Declare(
+	luajit
+	URL https://github.com/LuaJIT/LuaJIT/archive/refs/tags/v2.0.5.zip
+	BUILD_COMMAND "make"
+	INSTALL_COMMAND "make install"
+)
+endif()
 
 FetchContent_GetProperties(angle)
 if (NOT angle_POPULATED AND VIDENTI_TESTS)
@@ -46,14 +64,37 @@ FetchContent_GetProperties(glfw)
 if (NOT glfw_POPULATED AND VIDENTI_TESTS)
 	FetchContent_Populate(glfw)
 endif()
+message("VidentiUI: Added dependencies")
+
+message("VidentiUI: Fetching/compiling dependencies...")
+FetchContent_MakeAvailable(json stb luajit)
+
+if (WIN32 AND NOT (EXISTS "${luajit_SOURCE_DIR}/src/lua51.lib"))
+execute_process(COMMAND cmd.exe /c "cd ${luajit_SOURCE_DIR}/src/ && msvcbuild.bat static") # this assumes visual studio build tools are available, as msvcbuild.bat requires it
+if (NOT (EXISTS "${luajit_SOURCE_DIR}/src/lua51.lib"))
+message("LuaJIT is missing or did not compile correctly, make sure visual studio is able to use developer command prompt")
+endif()
+endif()
+
+add_library(luajitlib STATIC IMPORTED GLOBAL)
+if (WIN32)    
+set_property(TARGET luajitlib PROPERTY IMPORTED_LOCATION ${luajit_SOURCE_DIR}/src/lua51.lib)
+else()
+set_property(TARGET luajitlib PROPERTY IMPORTED_LOCATION ${luajit_SOURCE_DIR}/src/liblua51.a)
+endif()
+message("VidentiUI: Fetched/compiled dependencies")
 
 # Add source
 add_library (VidentiUI "src/VidentiUI.cpp" "src/VidentiUI.h" "src/VidentiParse.cpp" "src/VidentiParse.h" "src/VidentiRenderer.h"  "src/VidentiMath.h")
 target_include_directories(VidentiUI PUBLIC ${json_SOURCE_DIR}/single_include)
+target_include_directories(VidentiUI PUBLIC ${luajit_SOURCE_DIR}/src)
+target_link_libraries(VidentiUI INTERFACE luajitlib)
 set_property(TARGET VidentiUI PROPERTY CXX_STANDARD 20)
+message("VidentiUI: Finished build configuration")
 
 # For tests
 if (VIDENTI_TESTS)
+	message("VidentiUI: VIDENTI_TESTS has been set, configuring test app...")
 	set (VS_DEBUGGER_WORKING_DIRECTORY ${CMAKE_HOME_DIRECTORY}/tests)
 	add_executable(Tests "tests/src/main.cpp" "tests/src/main.h" "tests/src/Tests.cpp" "tests/src/Tests.h" "renderers/angle/VidentiAngleRenderer.cpp" "renderers/angle/VidentiAngleRenderer.h" "renderers/stb.cpp")
 
@@ -68,7 +109,7 @@ if (VIDENTI_TESTS)
 		target_link_directories(Tests PUBLIC ${CMAKE_HOME_DIRECTORY}/lib/windows)
 	elseif (APPLE)
 		target_link_directories(Tests PUBLIC ${CMAKE_HOME_DIRECTORY}/lib/apple)
-	elseif (LINUX)
+	else()
 		target_link_directories(Tests PUBLIC ${CMAKE_HOME_DIRECTORY}/lib/linux)
 	endif()
 	
@@ -78,4 +119,5 @@ if (VIDENTI_TESTS)
 	target_link_libraries(Tests PUBLIC VidentiUI)
 
 	set_property(TARGET Tests PROPERTY CXX_STANDARD 20)
+	message("VidentiUI: Configured test app")
 endif()

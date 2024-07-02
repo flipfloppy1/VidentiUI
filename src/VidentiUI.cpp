@@ -71,21 +71,22 @@ void VUI::VidentiHandler::GenUI()
 {
 	if (elements.empty())
 	{
-		Log(VUI::ERROR_MINOR, "VidentiHandler::GenUI: No elements to generate, call ParseUI to add elements");
+		Log(VUI::ERROR_MINOR, "VidentiHandler::GenUI: No elements to generate, call ParseUI() to add elements");
 		return;
 	}
 
 	if (uiRenderer == nullptr)
 	{
-		Log(VUI::ERROR_MAJOR, "VidentiHandler::GenUI: UI Renderer has not been defined, attach using AttachRenderer");
+		Log(VUI::ERROR_MAJOR, "VidentiHandler::GenUI: UI Renderer has not been defined, attach using AttachRenderer()");
 		return;
 	}
 
 	uiRenderer->InstructGeneration();
 }
 
-void VUI::VidentiHandler::AttachRenderer(VUI::Renderer::VidentiRenderer* renderer)
+void VUI::VidentiHandler::AttachRenderer(VUI::Renderer::VidentiRenderer* renderer, Math::vec2 windowDimensions)
 {
+	VidentiHandler::windowDimensions = windowDimensions;
 	VidentiHandler::uiRenderer = renderer;
 }
 
@@ -240,4 +241,23 @@ std::vector<VUI::Renderer::UIVertex> VUI::Text::GenVerts()
 	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + transformDimensions.x * 2.0f, -(position.y * 2.0f - 1.0f) }, color, { 1.0f,1.0f }));
 	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f) }, color, { 0.0f,1.0f }));
 	return vertices;
+}
+
+void VUI::VidentiHandler::InitRenderer()
+{
+	if (uiRenderer == nullptr)
+		VUI::Log(ERROR_FATAL, "VidentiHandler::InitRenderer() Renderer was not attached before initialisation, call AttachRenderer(renderer, windowDimensions) before Init()");
+	uiRenderer->Init();
+	uiRenderer->SetWindowDimensions(windowDimensions);
+}
+void VUI::VidentiHandler::InitLua()
+{
+	lua = luaL_newstate();
+	luaL_openlibs(lua);
+	luaopen_jit(lua);
+}
+void VUI::VidentiHandler::Init()
+{
+	InitLua();
+	InitRenderer();
 }

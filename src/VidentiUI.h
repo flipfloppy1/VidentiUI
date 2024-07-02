@@ -6,6 +6,7 @@
 #include <any>
 #include "VidentiRenderer.h"
 #include "VidentiMath.h"
+#include "lua.hpp"
 
 namespace VUI
 {
@@ -84,17 +85,13 @@ namespace VUI
 		friend class UIElement;
 
 	public:
+		void Init();
 		void StartFrame();
 		void Render();
 		void EndFrame();
-		void InitRenderer(Math::vec2 windowDimensions)
-		{
-			uiRenderer->Init();
-			uiRenderer->SetWindowDimensions(windowDimensions);
-		}
 		void ParseUI(const char* filepath);
 		void GenUI();
-		void AttachRenderer(Renderer::VidentiRenderer* renderer);
+		void AttachRenderer(Renderer::VidentiRenderer* renderer, Math::vec2 windowDimensions);
 
 		std::vector<UIElement*> elements;
 
@@ -117,8 +114,16 @@ namespace VUI
 			}
 			return uiRenderer->windowDimensions;
 		}
+		void SetWindowDimensions()
+		{
+
+		}
 	private:
 		Renderer::VidentiRenderer* uiRenderer = nullptr;
+		void InitRenderer();
+		void InitLua();
+		Math::vec2 windowDimensions;
+		lua_State* lua = nullptr;
 	};
 	const std::unordered_map<std::string, std::any> propertyDefaults
 	{

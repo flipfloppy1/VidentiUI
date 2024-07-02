@@ -3,8 +3,8 @@
 
 bool VUI::Tests::LoadRendererTest(VidentiHandler& uiHandler)
 {
-	uiHandler.AttachRenderer(new VUI::Renderer::VidentiAngleRenderer());
-	uiHandler.InitRenderer({ WINDOW_WIDTH,WINDOW_HEIGHT });
+	uiHandler.AttachRenderer(new VUI::Renderer::VidentiAngleRenderer(), {WINDOW_WIDTH,WINDOW_HEIGHT});
+	uiHandler.Init();
 	return true;
 }
 

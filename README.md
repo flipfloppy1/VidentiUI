@@ -1,12 +1,12 @@
 # VidentiUI
 
-### A UI library targeting real-time applications, with elements specified using only JSON.
+### A UI library targeting real-time applications, with elements specified using Lua.
 
 Features (current and planned):
 
-* Common object types (Buttons, sliders, textures, etc)
+* In-built basic object types (buttons, sliders, etc.) and custom looks for them
 * Support for custom rendering backends and wide cross-platform support
-* Nelua scripting integration (maybe)
+* Lua scripts specifying UI objects and their properties
 
 Goals:
 

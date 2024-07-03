@@ -131,12 +131,15 @@ if (VIDENTI_TESTS)
 	endif()
 	
 	if(WIN32)
-	target_link_libraries(Tests PUBLIC glfw3) # Use pre-compiled lib
-	else()
-	target_link_libraries(Tests PUBLIC glfw) # Build itself instead
-	endif()
 	target_link_libraries(Tests PUBLIC EGL)
 	target_link_libraries(Tests PUBLIC GLESv2)
+	target_link_libraries(Tests PUBLIC glfw3) # Use pre-compiled lib
+	else()
+	target_link_libraries(Tests PUBLIC EGL)
+	target_link_libraries(Tests PUBLIC GLESv2)
+	target_link_libraries(Tests PUBLIC glfw) # Build itself instead
+	endif()
+	
 	target_link_libraries(Tests PUBLIC VidentiUI)
 
 	set_property(TARGET Tests PROPERTY CXX_STANDARD 20)

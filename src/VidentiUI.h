@@ -24,6 +24,8 @@ namespace VUI
 		ERROR_FATAL
 	};
 
+	class VidentiHandler;
+
 	class UIElement
 	{
 		friend class VidentiHandler;

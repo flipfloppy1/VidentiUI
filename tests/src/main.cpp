@@ -151,7 +151,7 @@ int main()
 	GLFWwindow* window = Load();
 
 	using namespace std::chrono_literals;
-	std::chrono::steady_clock::time_point startTime = std::chrono::high_resolution_clock::now();
+	auto startTime = std::chrono::high_resolution_clock::now();
 	std::chrono::seconds runTime = 0s;
 
 	std::memset(testsRun, 0, sizeof(bool) * numTests);

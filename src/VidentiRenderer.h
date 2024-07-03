@@ -4,6 +4,7 @@
 #include <any>
 #include <unordered_map>
 #include <map>
+#include <vector>
 #include "VidentiMath.h"
 
 namespace VUI

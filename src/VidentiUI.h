@@ -25,7 +25,7 @@ namespace VUI
 	};
 
 	class VidentiHandler;
-
+	class VidentiRenderer;
 	class UIElement
 	{
 		friend class VidentiHandler;
@@ -39,34 +39,9 @@ namespace VUI
 		std::string texture;
 		bool ratioTransform[2];
 		int32_t layer;
-		virtual std::vector<Renderer::UIVertex> GenVerts() = 0;
+		virtual std::vector<Renderer::UIVertex> GenVerts();
 	protected:
 		VidentiHandler* uiHandler;
-	};
-
-	class Button : public UIElement
-	{
-		virtual std::vector<Renderer::UIVertex> GenVerts();
-	};
-
-	class Slider : public UIElement
-	{
-		virtual std::vector<Renderer::UIVertex> GenVerts();
-	};
-
-	class Texture : public UIElement
-	{
-		virtual std::vector<Renderer::UIVertex> GenVerts();
-	};
-
-	class Rectangle : public UIElement
-	{
-		virtual std::vector<Renderer::UIVertex> GenVerts();
-	};
-
-	class Text : public UIElement
-	{
-		virtual std::vector<Renderer::UIVertex> GenVerts();
 	};
 
 	struct Message
@@ -84,8 +59,6 @@ namespace VUI
 
 	class VidentiHandler
 	{
-		friend class UIElement;
-
 	public:
 		void Init();
 		void StartFrame();
@@ -93,13 +66,14 @@ namespace VUI
 		void EndFrame();
 		void ParseUI(const char* filepath);
 		void GenUI();
+		void SetLuaGlobals(float deltaTime);
 		void AttachRenderer(Renderer::VidentiRenderer* renderer, Math::vec2 windowDimensions);
 
-		std::vector<UIElement*> elements;
+		std::map<std::string, UIElement*> elements;
 
 		inline UIElement* FindElement(std::string id)
 		{
-			for (UIElement* element : elements)
+			for (auto [id, element] : elements)
 			{
 				if (element->id == id)
 					return element;
@@ -116,9 +90,15 @@ namespace VUI
 			}
 			return uiRenderer->windowDimensions;
 		}
-		void SetWindowDimensions()
+		void SetWindowDimensions(Math::vec2 windowDimensions)
 		{
-
+			if (uiRenderer == nullptr)
+			{
+				Log(VUI::ERROR_MAJOR, "VidentiHandler::SetWindowDimensions: No renderer attached");
+				return;
+			}
+			VidentiHandler::windowDimensions = windowDimensions;
+			uiRenderer->windowDimensions = windowDimensions;
 		}
 	private:
 		Renderer::VidentiRenderer* uiRenderer = nullptr;
@@ -133,6 +113,8 @@ namespace VUI
 		{"position",std::any(Math::vec2(0.0,0.0))},
 		{"layer",std::any(int32_t(0))},
 		{"color",std::any(Math::u8vec4(0,0,0,255))},
+		{"texture",std::any(std::string(""))},
 		{"ratioTransform",std::any(false)}
 	};
 }
+

@@ -1,185 +1,191 @@
 
 #include "VidentiParse.h"
 
-std::vector<VUI::UIElement*> VUI::ParseObjects(nlohmann::json uiObject, std::string typeString, VUI::UIElement* (*parseFunction)(nlohmann::json))
+std::map<std::string, VUI::UIElement*> VUI::ParseObjects(lua_State* lua, std::string typeString)
 {
-	std::vector<UIElement*> elements;
-	if (!uiObject.at("ui").contains(typeString))
-		return std::vector<UIElement*>();
-	else if (!uiObject.at("ui").at(typeString).is_array())
+	std::map<std::string, VUI::UIElement*> elements;
+
+	// This assumes "ui" is the first element on the stack, set up by ParseUI()
+	lua_getfield(lua, 1, typeString.c_str());
+	if (lua_isnil(lua, -1))
 	{
-		std::string errorString = "Malformed json: \"" + typeString + "\" was not an array";
-		VUI::Log(VUI::ERROR_MINOR, errorString.c_str());
-		return std::vector<UIElement*>();
+		lua_pop(lua, 1);
+		return std::map<std::string,VUI::UIElement*>();
+	}
+	else if (!lua_istable(lua, -1))
+	{
+		lua_pop(lua, 1);
+		VUI::Log(VUI::ERROR_MINOR, std::string("Malformed table: \"" + typeString + "\" was not a table").c_str());
+		return std::map<std::string,VUI::UIElement*>();
 	}
 
-	bool parseError = false;
-	for (nlohmann::json element : uiObject.at("ui").at(typeString))
+	lua_pushnil(lua);
+	while (lua_next(lua, 2) != 0)
 	{
-		elements.push_back(parseFunction(element));
+		if (!lua_isstring(lua, -2))
+		{
+			VUI::Log(VUI::ERROR_MINOR, std::string("UI category \"" + typeString + "\" contained a value, skipping").c_str());
+			continue;
+		}
+		VUI::UIElement* element = VUI::ParseProperties(lua, -1, lua_tostring(lua, -2));
+		elements.insert({element->id,element});
+		lua_pop(lua, 1);
 	}
+	lua_settop(lua, 1);
 	return elements;
 }
 
-bool VUI::HasValidInt(nlohmann::json element, std::string propertyName)
+bool VUI::HasValidInt(lua_State* lua, int elementIndex, std::string propertyName)
 {
-	if (element.contains(propertyName))
+	lua_getfield(lua, elementIndex, propertyName.c_str());
+	if (lua_isnumber(lua, -1))
 	{
-		return element.at(propertyName).is_number_integer();
+		lua_pop(lua, 1);
+		return true;
 	}
+	lua_pop(lua, 1);
 	return false;
 }
 
-bool VUI::HasValidVec2(nlohmann::json element, std::string propertyName)
+bool VUI::HasValidVec2(lua_State* lua, int elementIndex, std::string propertyName)
 {
-	if (element.contains(propertyName))
+	lua_getfield(lua, elementIndex, propertyName.c_str());
+	if (lua_istable(lua, -1))
 	{
-		if (element.at(propertyName).is_array())
+		lua_getfield(lua, -1, "x");
+		lua_getfield(lua, -2, "y");
+		if (lua_isnumber(lua, -2) && lua_isnumber(lua, -1))
 		{
-			if (element.at(propertyName).size() == 2)
-			{
-				return element.at(propertyName)[0].is_number() && element.at(propertyName)[1].is_number();
-			}
+			lua_pop(lua, 3);
+			return true;
 		}
+		lua_pop(lua, 3);
+		return false;
 	}
+	lua_pop(lua, 1);
 	return false;
 }
 
-bool VUI::HasValidVec2Bool(nlohmann::json element, std::string propertyName)
+bool VUI::HasValidString(lua_State* lua, int elementIndex, std::string propertyName)
 {
-	if (element.contains(propertyName))
+	lua_getfield(lua, elementIndex, propertyName.c_str());
+
+	if (!lua_isstring(lua, -1))
 	{
-		if (element.at(propertyName).is_array())
+		lua_pop(lua, 1);
+		return false;
+	}
+	lua_pop(lua, 1);
+	return true;
+}
+
+bool VUI::HasValidColor(lua_State* lua, int elementIndex, std::string propertyName)
+{
+	lua_getfield(lua, elementIndex, propertyName.c_str());
+
+	if (!lua_istable(lua, -1))
+	{
+		lua_pop(lua, 1);
+		return false;
+	}
+
+	lua_getfield(lua, -1, "r");
+	lua_getfield(lua, -2, "g");
+	lua_getfield(lua, -3, "b");
+	lua_getfield(lua, -4, "a");
+
+	if (lua_isnumber(lua, -1) && lua_isnumber(lua, -2) && lua_isnumber(lua, -3) && lua_isnumber(lua, -4))
+	{
+		bool valid = true;
+		for (int i = 1; i < 4; i++)
 		{
-			if (element.at(propertyName).size() == 2)
-			{
-				return element.at(propertyName)[0].is_boolean() && element.at(propertyName)[1].is_boolean();
-			}
+			valid &= lua_tointeger(lua, -i) <= 255 && lua_tointeger(lua, -i) >= 0;
 		}
+		lua_pop(lua, 5);
+		return valid;
 	}
+	lua_pop(lua, 5);
 	return false;
 }
 
-bool VUI::HasValidColor(nlohmann::json element, std::string propertyName)
+VUI::Math::u8vec4 inline VUI::GetColor(lua_State* lua, int elementIndex, std::string colorProperty)
 {
-	if (element.contains(propertyName))
+	lua_getfield(lua, elementIndex, colorProperty.c_str());
+
+	lua_getfield(lua, -1, "r");
+	lua_getfield(lua, -2, "g");
+	lua_getfield(lua, -3, "b");
+	lua_getfield(lua, -4, "a");
+
+	VUI::Math::u8vec4 color((uint8_t)lua_tointeger(lua, -4), (uint8_t)lua_tointeger(lua, -3), (uint8_t)lua_tointeger(lua, -2), (uint8_t)lua_tointeger(lua, -1));
+
+	lua_pop(lua, 5);
+	return color;
+}
+
+std::string VUI::GetString(lua_State* lua, int elementIndex, std::string stringProperty)
+{
+	lua_getfield(lua, elementIndex, stringProperty.c_str());
+	std::string str = lua_tostring(lua, -1);
+	lua_pop(lua, 1);
+	return str;
+}
+VUI::Math::vec2 VUI::GetVec2(lua_State* lua, int elementIndex, std::string vecProperty)
+{
+	lua_getfield(lua, elementIndex, vecProperty.c_str());
+
+	lua_getfield(lua, -1, "x");
+	lua_getfield(lua, -2, "y");
+
+	VUI::Math::vec2 vector(lua_tonumber(lua, -2), lua_tonumber(lua, -1));
+
+	lua_pop(lua, 3);
+	return vector;
+}
+
+int32_t VUI::GetInt(lua_State* lua, int elementIndex, std::string intProperty)
+{
+	lua_getfield(lua, -1, intProperty.c_str());
+	int32_t val = lua_tointeger(lua, -1);
+	lua_pop(lua, 1);
+	return val;
+}
+
+VUI::UIElement* VUI::ParseProperties(lua_State* lua, int elementIndex, std::string elementName)
+{
+	UIElement* newElement = new UIElement();
+	if (!lua_istable(lua, -1))
 	{
-		if (element.at(propertyName).is_array())
-		{
-			if (element.at(propertyName).size() == 4)
-			{
-				bool valid = true;
-				for (int i = 0; i < 4; i++)
-				{
-					if (!element.at(propertyName)[i].is_number_integer())
-					{
-						valid = false;
-						break;
-					}
-					valid &= element.at(propertyName)[i] >= 0 && element.at(propertyName)[i] <= 255;
-				}
-				return valid;
-			}
-		}
+		VUI::Log(VUI::ERROR_MINOR, std::string("ParseGenericProperties: Malformed element \"" + elementName + "\" was not a table, continuing with default properties").c_str());
+		return newElement;
 	}
-	return false;
-}
 
-VUI::Math::u8vec4 inline VUI::GetColor(nlohmann::json colorProperty)
-{
-	return Math::u8vec4{ (unsigned char)colorProperty[0], (unsigned char)colorProperty[1], (unsigned char)colorProperty[2], (unsigned char)colorProperty[3] };
-}
+	newElement->id = elementName;
 
-VUI::Math::vec2 inline VUI::GetVec2(nlohmann::json vecProperty)
-{
-	return { vecProperty[0], vecProperty[1] };
-}
-
-void VUI::ParseGenericProperties(nlohmann::json element, VUI::UIElement* newElement)
-{
-	if (element.contains("id"))
-	{
-		if (element.at("id").is_string())
-			newElement->id = element.at("id");
-		else
-			newElement->id = "element" + std::to_string(rand());
-	}
+	if (HasValidString(lua, -1, "texture"))
+		newElement->texture = GetString(lua, -1, "texture");
 	else
-		newElement->id = "element" + std::to_string(rand());
+		newElement->texture = std::any_cast<std::string>(propertyDefaults.at("texture"));
 
-	if (element.contains("texture"))
-	{
-		if (element.at("texture").is_string())
-			newElement->texture = element.at("texture");
-		else
-			newElement->texture = "";
-	}
-	else
-		newElement->texture = "";
-
-	if (HasValidVec2(element, "position"))
-		newElement->position = GetVec2(element.at("position"));
+	if (HasValidVec2(lua, -1, "position"))
+		newElement->position = GetVec2(lua, -1, "position");
 	else
 		newElement->position = std::any_cast<Math::vec2>(propertyDefaults.at("position"));
 
-	if (HasValidVec2(element, "dimensions"))
-		newElement->dimensions = GetVec2(element.at("dimensions"));
+	if (HasValidVec2(lua, -1, "dimensions"))
+		newElement->dimensions = GetVec2(lua, -1, "dimensions");
 	else
 		newElement->dimensions = std::any_cast<Math::vec2>(propertyDefaults.at("dimensions"));
 
-	if (HasValidColor(element, "color"))
-		newElement->color = GetColor(element.at("color"));
+	if (HasValidColor(lua, -1, "color"))
+		newElement->color = GetColor(lua, -1, "color");
 	else
 		newElement->color = std::any_cast<Math::u8vec4>(propertyDefaults.at("color"));
 
-	if (HasValidInt(element, "layer"))
-		newElement->layer = element.at("layer");
+	if (HasValidInt(lua, -1, "layer"))
+		newElement->layer = GetInt(lua, -1, "layer");
 	else
 		newElement->layer = std::any_cast<int32_t>(propertyDefaults.at("layer"));
 
-	if (HasValidVec2Bool(element, "ratioTransform"))
-	{
-		newElement->ratioTransform[0] = element.at("ratioTransform")[0];
-		newElement->ratioTransform[1] = element.at("ratioTransform")[1];
-	}
-	else
-	{
-		newElement->ratioTransform[0] = std::any_cast<bool>(propertyDefaults.at("ratioTransform"));
-		newElement->ratioTransform[1] = std::any_cast<bool>(propertyDefaults.at("ratioTransform"));
-	}
-}
-
-VUI::UIElement* VUI::ParseRectangle(nlohmann::json element)
-{
-	UIElement* newElement = new Rectangle();
-	ParseGenericProperties(element, newElement);
-	return newElement;
-}
-
-VUI::UIElement* VUI::ParseTexture(nlohmann::json element)
-{
-	UIElement* newElement = new Texture();
-	ParseGenericProperties(element, newElement);
-	return newElement;
-}
-
-VUI::UIElement* VUI::ParseButton(nlohmann::json element)
-{
-	UIElement* newElement = new Button();
-	ParseGenericProperties(element, newElement);
-	return newElement;
-}
-
-VUI::UIElement* VUI::ParseText(nlohmann::json element)
-{
-	UIElement* newElement = new Text();
-	ParseGenericProperties(element, newElement);
-	return newElement;
-}
-
-VUI::UIElement* VUI::ParseSlider(nlohmann::json element)
-{
-	UIElement* newElement = new Slider();
-	ParseGenericProperties(element, newElement);
 	return newElement;
 }

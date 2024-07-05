@@ -16,7 +16,7 @@ namespace VUI
 			typedef unsigned int TextureIDType;
 		public:
 			virtual VUI::Renderer::TextureID LoadTexture(std::string filepath);
-			virtual void GenElements(std::vector<UIElement*> elements);
+			virtual void GenElements(std::map<std::string,UIElement*> elements);
 			virtual ElementVertices GenVerts(UIElement* element);
 			virtual void Render();
 			virtual void CompileRender();

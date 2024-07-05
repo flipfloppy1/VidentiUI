@@ -12,7 +12,6 @@ void VUI::VidentiHandler::Render()
 		uiRenderer->GenElements(elements);
 
 	uiRenderer->Render();
-
 }
 
 void VUI::VidentiHandler::StartFrame()
@@ -32,39 +31,53 @@ void VUI::VidentiHandler::ParseUI(const char* filepath)
 
 	if (!f.is_open())
 	{
-		VUI::Log(ERROR_MAJOR, "ParseUI: Unable to find file, returning with empty UI");
+		VUI::Log(ERROR_MAJOR, std::string("ParseUI: Unable to find file \"" + std::string(filepath) + "\", returning with empty UI").c_str());
 		elements.clear();
 		return;
 	}
-
-	nlohmann::json uiObject = nlohmann::json::parse(std::istreambuf_iterator<char>(f), std::istreambuf_iterator<char>(0));
-
 	f.close();
 
-	if (!uiObject.contains("ui"))
+	// Clear stack
+	lua_settop(lua, 0);
+
+	if (luaL_dofile(lua, filepath))
 	{
-		VUI::Log(ERROR_MINOR, "ParseUI: UI json empty, returning with empty UI");
+		VUI::Log(ERROR_MAJOR, std::string("ParseUI: Lua was unable to load/run file \"" + std::string(filepath) + "\", returning with empty UI").c_str());
 		elements.clear();
 		return;
 	}
 
-	std::vector<UIElement*> newElements;
+	
+	lua_getglobal(lua, "ui");
 
-	newElements = ParseObjects(uiObject, "buttons", ParseButton);
-	elements.insert(elements.end(), newElements.begin(), newElements.end());
-	newElements = ParseObjects(uiObject, "text", ParseText);
-	elements.insert(elements.end(), newElements.begin(), newElements.end());
-	newElements = ParseObjects(uiObject, "rectangles", ParseRectangle);
-	elements.insert(elements.end(), newElements.begin(), newElements.end());
-	newElements = ParseObjects(uiObject, "sliders", ParseSlider);
-	elements.insert(elements.end(), newElements.begin(), newElements.end());
-	newElements = ParseObjects(uiObject, "textures", ParseTexture);
-	elements.insert(elements.end(), newElements.begin(), newElements.end());
+	if (lua_isnil(lua, -1))
+	{
+		VUI::Log(ERROR_MINOR, std::string("ParseUI: Variable \'ui\' did not exist in \"" + std::string(filepath) + "\", returning with empty UI").c_str());
+		elements.clear();
+		return;
+	}
 
-	for (UIElement* element : elements)
+	if (!lua_istable(lua, -1))
+	{
+		VUI::Log(ERROR_MAJOR, std::string("ParseUI: Variable \'ui\' was not a table in \"" + std::string(filepath) + "\", returning with empty UI").c_str());
+		elements.clear();
+		return;
+	}
+
+	std::map<std::string,UIElement*> newElements;
+	
+	newElements = ParseObjects(lua, "buttons");
+	for (auto iter = newElements.begin(); iter != newElements.end(); iter++)
+	{
+		elements.insert_or_assign(iter->first,iter->second);
+	}
+
+	for (auto [id, element] : elements)
 	{
 		element->uiHandler = this;
 	}
+
+	lua_settop(lua, 0);
 }
 
 void VUI::VidentiHandler::GenUI()
@@ -111,7 +124,7 @@ void VUI::Log(ErrorCode errorCode, const char* message)
 	}
 
 #ifndef VIDENTI_SILENT
-	std::cout << "Logging with error code: " << errorString << "; message: " << message << '\n';
+	std::cout << "Videnti log with code: " << errorString << "; message:\n \"" << message << "\"\n";
 #else
 	isMessage = true;
 	currMessage = message;
@@ -128,117 +141,17 @@ VUI::Message VUI::FetchMessage()
 	return { currMessage,currErrorCode };
 }
 
-std::vector<VUI::Renderer::UIVertex> VUI::Button::GenVerts()
+// Simple vertices for a box, for now
+std::vector<VUI::Renderer::UIVertex> VUI::UIElement::GenVerts()
 {
 	std::vector<Renderer::UIVertex> vertices;
 	Math::vec2 windowDimensions = uiHandler->GetWindowDimensions();
-	Math::vec2 transformDimensions(0.0f);
-	if (ratioTransform[0])
-		transformDimensions.x = dimensions.x * windowDimensions.x / windowDimensions.y;
-	else
-		transformDimensions.x = dimensions.x;
-	if (ratioTransform[1])
-		transformDimensions.y = dimensions.y * windowDimensions.x / windowDimensions.y;
-	else
-		transformDimensions.y = dimensions.y;
 
 	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f) }, color, { 0.0f,1.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f + transformDimensions.y * 2.0f) }, color, { 0.0f,0.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + transformDimensions.x * 2.0f, -(position.y * 2.0f - 1.0f + transformDimensions.y * 2.0f) }, color, { 1.0f,0.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + transformDimensions.x * 2.0f, -(position.y * 2.0f - 1.0f + transformDimensions.y * 2.0f) }, color, { 1.0f,0.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + transformDimensions.x * 2.0f, -(position.y * 2.0f - 1.0f) }, color, { 1.0f,1.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f) }, color, { 0.0f,1.0f }));
-	return vertices;
-}
-
-std::vector<VUI::Renderer::UIVertex> VUI::Slider::GenVerts()
-{
-	std::vector<Renderer::UIVertex> vertices;
-	Math::vec2 windowDimensions = uiHandler->GetWindowDimensions();
-	Math::vec2 transformDimensions(0.0f);
-	if (ratioTransform[0])
-		transformDimensions.x = dimensions.x * windowDimensions.x / windowDimensions.y;
-	else
-		transformDimensions.x = dimensions.x;
-	if (ratioTransform[1])
-		transformDimensions.y = dimensions.y * windowDimensions.x / windowDimensions.y;
-	else
-		transformDimensions.y = dimensions.y;
-
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f) }, color, { 0.0f,1.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f + transformDimensions.y * 2.0f) }, color, { 0.0f,0.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + transformDimensions.x * 2.0f, -(position.y * 2.0f - 1.0f + transformDimensions.y * 2.0f) }, color, { 1.0f,0.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + transformDimensions.x * 2.0f, -(position.y * 2.0f - 1.0f + transformDimensions.y * 2.0f) }, color, { 1.0f,0.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + transformDimensions.x * 2.0f, -(position.y * 2.0f - 1.0f) }, color, { 1.0f,1.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f) }, color, { 0.0f,1.0f }));
-	return vertices;
-}
-
-std::vector<VUI::Renderer::UIVertex> VUI::Texture::GenVerts()
-{
-	std::vector<Renderer::UIVertex> vertices;
-	Math::vec2 windowDimensions = uiHandler->GetWindowDimensions();
-	Math::vec2 transformDimensions(0.0f);
-	if (ratioTransform[0])
-		transformDimensions.x = dimensions.x * windowDimensions.x / windowDimensions.y;
-	else
-		transformDimensions.x = dimensions.x;
-	if (ratioTransform[1])
-		transformDimensions.y = dimensions.y * windowDimensions.x / windowDimensions.y;
-	else
-		transformDimensions.y = dimensions.y;
-
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f) }, color, { 0.0f,1.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f + transformDimensions.y * 2.0f) }, color, { 0.0f,0.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + transformDimensions.x * 2.0f, -(position.y * 2.0f - 1.0f + transformDimensions.y * 2.0f) }, color, { 1.0f,0.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + transformDimensions.x * 2.0f, -(position.y * 2.0f - 1.0f + transformDimensions.y * 2.0f) }, color, { 1.0f,0.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + transformDimensions.x * 2.0f, -(position.y * 2.0f - 1.0f) }, color, { 1.0f,1.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f) }, color, { 0.0f,1.0f }));
-	return vertices;
-}
-
-std::vector<VUI::Renderer::UIVertex> VUI::Rectangle::GenVerts()
-{
-	std::vector<Renderer::UIVertex> vertices;
-	Math::vec2 windowDimensions = uiHandler->GetWindowDimensions();
-	Math::vec2 transformDimensions(0.0f);
-	if (ratioTransform[0])
-		transformDimensions.x = dimensions.x * windowDimensions.x / windowDimensions.y;
-	else
-		transformDimensions.x = dimensions.x;
-	if (ratioTransform[1])
-		transformDimensions.y = dimensions.y * windowDimensions.x / windowDimensions.y;
-	else
-		transformDimensions.y = dimensions.y;
-
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f) }, color, { 0.0f,1.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f + transformDimensions.y * 2.0f) }, color, { 0.0f,0.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + transformDimensions.x * 2.0f, -(position.y * 2.0f - 1.0f + transformDimensions.y * 2.0f) }, color, { 1.0f,0.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + transformDimensions.x * 2.0f, -(position.y * 2.0f - 1.0f + transformDimensions.y * 2.0f) }, color, { 1.0f,0.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + transformDimensions.x * 2.0f, -(position.y * 2.0f - 1.0f) }, color, { 1.0f,1.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f) }, color, { 0.0f,1.0f }));
-	return vertices;
-}
-
-std::vector<VUI::Renderer::UIVertex> VUI::Text::GenVerts()
-{
-	std::vector<Renderer::UIVertex> vertices;
-	Math::vec2 windowDimensions = uiHandler->GetWindowDimensions();
-	Math::vec2 transformDimensions(0.0f);
-	if (ratioTransform[0])
-		transformDimensions.x = dimensions.x * windowDimensions.x / windowDimensions.y;
-	else
-		transformDimensions.x = dimensions.x;
-	if (ratioTransform[1])
-		transformDimensions.y = dimensions.y * windowDimensions.x / windowDimensions.y;
-	else
-		transformDimensions.y = dimensions.y;
-
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f) }, color, { 0.0f,1.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f + transformDimensions.y * 2.0f) }, color, { 0.0f,0.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + transformDimensions.x * 2.0f, -(position.y * 2.0f - 1.0f + transformDimensions.y * 2.0f) }, color, { 1.0f,0.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + transformDimensions.x * 2.0f, -(position.y * 2.0f - 1.0f + transformDimensions.y * 2.0f) }, color, { 1.0f,0.0f }));
-	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + transformDimensions.x * 2.0f, -(position.y * 2.0f - 1.0f) }, color, { 1.0f,1.0f }));
+	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f + dimensions.y * 2.0f) }, color, { 0.0f,0.0f }));
+	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + dimensions.x * 2.0f, -(position.y * 2.0f - 1.0f + dimensions.y * 2.0f) }, color, { 1.0f,0.0f }));
+	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + dimensions.x * 2.0f, -(position.y * 2.0f - 1.0f + dimensions.y * 2.0f) }, color, { 1.0f,0.0f }));
+	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + dimensions.x * 2.0f, -(position.y * 2.0f - 1.0f) }, color, { 1.0f,1.0f }));
 	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f) }, color, { 0.0f,1.0f }));
 	return vertices;
 }
@@ -246,7 +159,7 @@ std::vector<VUI::Renderer::UIVertex> VUI::Text::GenVerts()
 void VUI::VidentiHandler::InitRenderer()
 {
 	if (uiRenderer == nullptr)
-		VUI::Log(ERROR_FATAL, "VidentiHandler::InitRenderer() Renderer was not attached before initialisation, call AttachRenderer(renderer, windowDimensions) before Init()");
+		VUI::Log(ERROR_FATAL, "VidentiHandler::InitRenderer: Renderer was not attached before initialisation, call AttachRenderer(renderer, windowDimensions) before Init()");
 	uiRenderer->Init();
 	uiRenderer->SetWindowDimensions(windowDimensions);
 }
@@ -255,9 +168,22 @@ void VUI::VidentiHandler::InitLua()
 	lua = luaL_newstate();
 	luaL_openlibs(lua);
 	luaopen_jit(lua);
+
+	SetLuaGlobals(0.0f);
 }
+
 void VUI::VidentiHandler::Init()
 {
 	InitLua();
 	InitRenderer();
+}
+
+void VUI::VidentiHandler::SetLuaGlobals(float deltaTime)
+{
+	lua_pushnumber(lua, windowDimensions.x);
+	lua_setglobal(lua, "VUI_winX");
+	lua_pushnumber(lua, windowDimensions.y);
+	lua_setglobal(lua, "VUI_winY");
+	lua_pushnumber(lua, deltaTime);
+	lua_setglobal(lua, "VUI_dt");
 }

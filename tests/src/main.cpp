@@ -83,6 +83,7 @@ static GLFWwindow* Load()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glClipControlEXT(GL_LOWER_LEFT_EXT, GL_ZERO_TO_ONE_EXT);
 
 	return window;
 }
@@ -92,40 +93,13 @@ static void Unload(GLFWwindow* window)
 	// TODO: Report test passes and failures
 	glfwDestroyWindow(window);
 	glfwTerminate();
-	system("pause");
 }
 
-static void Update(std::chrono::seconds runTime)
+static void Update(std::chrono::seconds runTime, float deltaTime)
 {
-	shouldQuit = true;
-	for (int i = 0; i < numTests; i++)
-	{
-		if (!testsRun[i].first && runTime >= (std::chrono::seconds)(testWaitSeconds * i))
-		{
-			std::cout << "Loading Test #" << std::to_string(i + 1) << "...\n";
-			testsPassed[i].first = testFunctions[i].first(uiHandler);
-
-			if (testsPassed[i].first)
-				std::cout << "Loading Test #" << std::to_string(i + 1) << " \033[1;32mpassed\033[0m\n";
-			else
-				std::cout << "Loading Test #" << std::to_string(i + 1) << " \033[1;31mfailed\033[0m\n";
-
-			testsRun[i].first = true;
-		}
-		else if (!testsRun[i].second && runTime >= (std::chrono::seconds)(testWaitSeconds * (i + 1)))
-		{
-			std::cout << "Unloading Test #" << std::to_string(i + 1) << "...\n";
-			testsPassed[i].second = testFunctions[i].second(uiHandler);
-
-			if (testsPassed[i].second)
-				std::cout << "Unloading Test #" << std::to_string(i + 1) << " \033[1;32mpassed\033[0m\n";
-			else															  
-				std::cout << "Unloading Test #" << std::to_string(i + 1) << " \033[1;31mfailed\033[0m\n";
-
-			testsRun[i].second = true;
-		}
-		shouldQuit &= testsRun[i].second;
-	}
+	uiHandler.SetLuaGlobals(deltaTime);	
+	uiHandler.ParseUI("resources/update.lua");
+	uiHandler.GenUI();
 }
 
 static void Render(GLFWwindow* window)
@@ -151,16 +125,25 @@ int main()
 
 	using namespace std::chrono_literals;
 	auto startTime = std::chrono::high_resolution_clock::now();
+	auto delta = std::chrono::high_resolution_clock::now();
 	std::chrono::seconds runTime = 0s;
+	std::chrono::milliseconds deltaTime = 0ms;
 
-	std::memset(testsRun, 0, sizeof(bool) * numTests);
-	
+
+	uiHandler.AttachRenderer(new VUI::Renderer::VidentiAngleRenderer(), { WINDOW_WIDTH,WINDOW_HEIGHT });
+	uiHandler.Init();
+
+	uiHandler.ParseUI("resources/start.lua");
+	uiHandler.GenUI();
+
 	while (!((glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) || shouldQuit))
 	{
-		Update(runTime);
+		Update(runTime, deltaTime.count() / 1000.0f);
 		Input();
 		Render(window);
 		runTime = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - startTime);
+		deltaTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - delta);
+		delta = std::chrono::high_resolution_clock::now();
 	}
 	Unload(window);
 }

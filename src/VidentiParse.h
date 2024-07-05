@@ -1,24 +1,23 @@
 #pragma once
 
-#include <nlohmann/json.hpp>
+#include "lua.hpp"
 #include "VidentiUI.h"
 #include "VidentiMath.h"
+#include <iostream>
+#include <map>
 
 namespace VUI
 {
-	bool HasValidVec2(nlohmann::json element, std::string propertyName);
-	bool HasValidVec2Bool(nlohmann::json element, std::string propertyName);
-	bool HasValidColor(nlohmann::json element, std::string propertyName);
-	bool HasValidInt(nlohmann::json element, std::string propertyName);
+	bool HasValidVec2(lua_State* lua, int elementIndex, std::string propertyName);
+	bool HasValidString(lua_State* lua, int elementIndex, std::string propertyName);
+	bool HasValidColor(lua_State* lua, int elementIndex, std::string propertyName);
+	bool HasValidInt(lua_State* lua, int elementIndex, std::string propertyName);
 
-	Math::u8vec4 inline GetColor(nlohmann::json colorProperty);
-	Math::vec2 inline GetVec2(nlohmann::json vecProperty);
+	Math::u8vec4 inline GetColor(lua_State* lua, int elementIndex, std::string colorProperty);
+	Math::vec2 inline GetVec2(lua_State* lua, int elementIndex, std::string vecProperty);
+	std::string GetString(lua_State* lua, int elementIndex, std::string stringProperty);
+	int32_t GetInt(lua_State* lua, int elementIndex, std::string intProperty);
 
-	std::vector<UIElement*> ParseObjects(nlohmann::json uiObject, std::string typeString, UIElement* (*parseFunction)(nlohmann::json));
-	void ParseGenericProperties(nlohmann::json element, UIElement* newElement);
-	UIElement* ParseRectangle(nlohmann::json element);
-	UIElement* ParseTexture(nlohmann::json element);
-	UIElement* ParseButton(nlohmann::json element);
-	UIElement* ParseText(nlohmann::json element);
-	UIElement* ParseSlider(nlohmann::json element);
+	std::map<std::string,UIElement*> ParseObjects(lua_State* lua, std::string typeString);
+	UIElement* ParseProperties(lua_State* lua, int indexElement, std::string elementName);
 }

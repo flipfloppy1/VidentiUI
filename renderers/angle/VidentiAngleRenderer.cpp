@@ -108,9 +108,9 @@ VUI::Renderer::TextureID VUI::Renderer::VidentiAngleRenderer::LoadTexture(std::s
 	return TextureID(textureID);
 }
 
-void VUI::Renderer::VidentiAngleRenderer::GenElements(std::vector<UIElement*> elements)
+void VUI::Renderer::VidentiAngleRenderer::GenElements(std::map<std::string, UIElement* > elements)
 {
-	for (UIElement* element : elements)
+	for (auto [id, element] : elements)
 		elementVertices.insert(std::pair{ element->layer,ElementVertices(GenVerts(element)) });
 
 	generated = true;

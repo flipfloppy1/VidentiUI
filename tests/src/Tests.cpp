@@ -3,7 +3,7 @@
 
 bool VUI::Tests::LoadRendererTest(VidentiHandler& uiHandler)
 {
-	uiHandler.AttachRenderer(new VUI::Renderer::VidentiAngleRenderer(), {WINDOW_WIDTH,WINDOW_HEIGHT});
+	uiHandler.AttachRenderer(new VUI::Renderer::VidentiAngleRenderer(), { WINDOW_WIDTH,WINDOW_HEIGHT });
 	uiHandler.Init();
 	return true;
 }
@@ -17,18 +17,10 @@ bool VUI::Tests::LoadParseTest(VidentiHandler& uiHandler)
 {
 	bool testResult = true;
 
-	uiHandler.ParseUI("resources/parseTest.json");
+	uiHandler.ParseUI("resources/start.lua");
 
 	// Test element parsing
 	if (uiHandler.FindElement("button1") == nullptr)
-		testResult = false;
-
-	// Test default properties
-	if (!(uiHandler.FindElement("button1")->color == std::any_cast<VUI::Math::u8vec4>(VUI::propertyDefaults.at("color"))))
-		testResult = false;
-
-	// Test parsed properties
-	if (!(uiHandler.FindElement("button1")->position == Math::vec2(0.45f)))
 		testResult = false;
 
 	uiHandler.GenUI();

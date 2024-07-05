@@ -4,9 +4,8 @@
 
 Features (current and planned):
 
-* In-built basic object types (buttons, sliders, etc.) and custom looks for them
+* Custom object types and reactivity built in lua
 * Support for custom rendering backends and wide cross-platform support
-* Lua scripts specifying UI objects and their properties
 
 Goals:
 

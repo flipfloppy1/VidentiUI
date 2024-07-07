@@ -1,7 +1,6 @@
 ﻿
 #include "VidentiUI.h"
 #include "VidentiParse.h"
-#include <nlohmann/json.hpp>
 #include <fstream>
 #include <iostream>
 #include <string>

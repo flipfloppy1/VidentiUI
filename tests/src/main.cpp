@@ -1,6 +1,6 @@
 
 #include "main.h"
-
+#define _DEBUG
 static void printDebug(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
 	const GLchar* message, const void* userParam)
 {
@@ -47,6 +47,8 @@ static GLFWwindow* Load()
 	//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_SAMPLES, 4);
 	glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
+
+	std::cout << glfwGetVersionString() << '\n';
 
 	int windowWidth = dimensions->width;
 	int windowHeight = dimensions->height;
@@ -97,7 +99,7 @@ static void Unload(GLFWwindow* window)
 
 static void Update(std::chrono::seconds runTime, float deltaTime)
 {
-	uiHandler.SetLuaGlobals(deltaTime);	
+	uiHandler.SetLuaGlobals(deltaTime);
 	uiHandler.ParseUI("resources/update.lua");
 	uiHandler.GenUI();
 }

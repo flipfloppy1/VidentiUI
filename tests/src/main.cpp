@@ -48,8 +48,6 @@ static GLFWwindow* Load()
 	glfwWindowHint(GLFW_SAMPLES, 4);
 	glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
 
-	std::cout << glfwGetVersionString() << '\n';
-
 	int windowWidth = dimensions->width;
 	int windowHeight = dimensions->height;
 	GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "Videnti Tests", NULL, NULL);
@@ -100,7 +98,10 @@ static void Unload(GLFWwindow* window)
 static void Update(std::chrono::seconds runTime, float deltaTime)
 {
 	uiHandler.SetLuaGlobals(deltaTime);
-	uiHandler.ParseUI("resources/update.lua");
+
+	if (uiHandler.GetLuaNextScript() != nullptr)
+		uiHandler.ParseUI(uiHandler.GetLuaNextScript()->c_str());
+
 	uiHandler.GenUI();
 }
 

@@ -177,6 +177,17 @@ void VUI::VidentiHandler::Init()
 	InitRenderer();
 }
 
+std::string* VUI::VidentiHandler::GetLuaNextScript()
+{
+	lua_getglobal(lua, "VUI_nextScript");
+	if (lua_isnil(lua, -1))
+		nextScript = nullptr;
+	if (lua_isstring(lua, -1))
+		nextScript = new std::string(lua_tostring(lua, -1));
+	lua_pop(lua, 1);
+	return nextScript;
+}
+
 void VUI::VidentiHandler::SetLuaGlobals(float deltaTime)
 {
 	lua_pushnumber(lua, windowDimensions.x);

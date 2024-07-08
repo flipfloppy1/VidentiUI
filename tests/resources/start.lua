@@ -5,3 +5,4 @@ dimensions = { x = 1.0, y = 1.0 * VUI_winX / VUI_winY },
 color = { r = 0, g = 0, b = 0, a = 255 },
 texture = ""};
 time = 0.0;
+VUI_nextScript = "resources/update.lua";

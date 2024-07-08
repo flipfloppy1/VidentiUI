@@ -12,7 +12,6 @@ project("VidentiUI")
 
 message("VidentiUI: Setting build properties...")
 add_compile_definitions(GL_GLEXT_PROTOTYPES)
-set(GLFW_BUILD_WAYLAND OFF)
 set(BUILD_SHARED_LIBS OFF)
 set_property(GLOBAL PROPERTY CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -32,12 +31,12 @@ FetchContent_Declare(
 
 if (WIN32)
 FetchContent_Declare(
-	glfw
+	glfwsrc
 	URL https://github.com/glfw/glfw/releases/download/3.4/glfw-3.4.zip
 )
 else()
 FetchContent_Declare(
-	glfw
+	glfwsrc
 	GIT_REPOSITORY https://github.com/glfw/glfw.git
 	GIT_TAG 7b6aead9fb88b3623e3b3725ebb42670cbe4c579 # glfw 3.4, has to be compiled from source on linux
 )
@@ -68,17 +67,14 @@ if (NOT angle_POPULATED AND VIDENTI_TESTS)
 	FetchContent_Populate(angle)
 endif()
 
-FetchContent_GetProperties(glfw)
-if (NOT glfw_POPULATED AND VIDENTI_TESTS AND WIN32)
-	FetchContent_Populate(glfw)
+FetchContent_GetProperties(glfwsrc)
+if (NOT glfwsrc_POPULATED AND VIDENTI_TESTS)
+	FetchContent_Populate(glfwsrc)
 endif()
 message("VidentiUI: Added dependencies")
 
 message("VidentiUI: Fetching/compiling dependencies...")
 FetchContent_MakeAvailable(json stb luajit)
-if(NOT WIN32)
-FetchContent_MakeAvailable(glfw)
-endif()
 
 if (WIN32 AND NOT (EXISTS "${luajit_SOURCE_DIR}/src/lua51.lib"))
 	execute_process(COMMAND cmd.exe /c "cd ${luajit_SOURCE_DIR}/src/ && msvcbuild.bat static") # this assumes visual studio build tools are available, as msvcbuild.bat requires it
@@ -119,7 +115,7 @@ if (VIDENTI_TESTS)
 	target_include_directories(Tests PUBLIC ${CMAKE_HOME_DIRECTORY}/src/)
 	target_include_directories(Tests PUBLIC ${angle_SOURCE_DIR}/include/)
 	target_include_directories(Tests PUBLIC ${stb_SOURCE_DIR})
-	target_include_directories(Tests PUBLIC ${glfw_SOURCE_DIR}/include/)
+	target_include_directories(Tests PUBLIC ${glfwsrc_SOURCE_DIR}/include/)
 	target_include_directories(Tests PUBLIC ${CMAKE_HOME_DIRECTORY}/renderers/angle/)
 	target_include_directories(Tests PUBLIC ${CMAKE_HOME_DIRECTORY}/tests/include/)
 	
@@ -136,13 +132,12 @@ if (VIDENTI_TESTS)
 	target_link_libraries(Tests PUBLIC GLESv2)
 	target_link_libraries(Tests PUBLIC glfw3) # Use pre-compiled lib
 	else()
-	target_link_libraries(Tests PUBLIC glfw) # Build itself instead
+	target_link_libraries(Tests PUBLIC glfw.so.3.3) # Must be installed with apt-get if not already available
 	target_link_libraries(Tests PUBLIC ANGLE)
-	target_link_libraries(Tests PUBLIC GLX)
 	target_link_libraries(Tests PUBLIC X11)
-	target_link_libraries(Tests PUBLIC wayland-client)
 	target_link_libraries(Tests PUBLIC xcb)
 	target_link_libraries(Tests PUBLIC Xext)
+	target_link_libraries(Tests PUBLIC wayland-client)
 	target_link_libraries(Tests PUBLIC drm)
 	endif()
 	

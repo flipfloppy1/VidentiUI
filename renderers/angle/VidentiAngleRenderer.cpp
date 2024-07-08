@@ -2,7 +2,7 @@
 #include "VidentiAngleRenderer.h"
 
 const char* colorVertShader =
-"#version 310 es\n"
+"#version 300 es\n"
 "precision highp float;\n"
 "layout (location = 0) in vec2 inPos;\n"
 "layout (location = 1) in uint inColor;\n"
@@ -19,7 +19,7 @@ const char* colorVertShader =
 "}\n";
 
 const char* colorFragShader =
-"#version 310 es\n"
+"#version 300 es\n"
 "precision highp float;\n"
 "out vec4 color;\n"
 "flat in vec4 finalColor;\n"
@@ -29,7 +29,7 @@ const char* colorFragShader =
 "}\n";
 
 const char* textureVertShader =
-"#version 310 es\n"
+"#version 300 es\n"
 "precision highp float;\n"
 "layout (location = 0) in vec2 inPos;\n"
 "layout (location = 1) in uint inColor;\n"
@@ -48,7 +48,7 @@ const char* textureVertShader =
 "}\n";
 
 const char* textureFragShader =
-"#version 310 es\n"
+"#version 300 es\n"
 "precision highp float;\n"
 "out vec4 color;"
 "flat in vec4 tint;\n"

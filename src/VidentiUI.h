@@ -68,7 +68,9 @@ namespace VUI
 		void GenUI();
 		void SetLuaGlobals(float deltaTime);
 		void AttachRenderer(Renderer::VidentiRenderer* renderer, Math::vec2 windowDimensions);
+		std::string* GetLuaNextScript();
 
+		std::string* nextScript = nullptr;
 		std::map<std::string, UIElement*> elements;
 
 		inline UIElement* FindElement(std::string id)

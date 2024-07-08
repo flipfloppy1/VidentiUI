@@ -78,12 +78,11 @@ static GLFWwindow* Load()
 	glDebugMessageCallback(printDebug, NULL);
 #endif
 
-	//glFrontFace(GL_CCW);
-	//glEnable(GL_CULL_FACE);
+	glFrontFace(GL_CCW);
+	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	//glClipControlEXT(GL_LOWER_LEFT_EXT, GL_ZERO_TO_ONE_EXT);
 
 	return window;
 }
@@ -100,15 +99,17 @@ static void Update(std::chrono::seconds runTime, float deltaTime)
 	uiHandler.SetLuaGlobals(deltaTime);
 
 	if (uiHandler.GetLuaNextScript() != nullptr)
+	{
 		uiHandler.ParseUI(uiHandler.GetLuaNextScript()->c_str());
+		uiHandler.GenUI();
+	}
 
-	uiHandler.GenUI();
 }
 
 static void Render(GLFWwindow* window)
 {
 	glClearColor(1.0, 1.0, 1.0, 1.0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 	uiHandler.StartFrame();
 	uiHandler.Render();
@@ -119,7 +120,7 @@ static void Render(GLFWwindow* window)
 
 static void Input()
 {
-	glfwPollEvents();
+	uiHandler.RefreshEvents();
 }
 
 int main()
@@ -132,7 +133,10 @@ int main()
 	std::chrono::seconds runTime = 0s;
 	std::chrono::milliseconds deltaTime = 0ms;
 
+	VUI::Poller::VidentiGLFWPoller* uiPoller = new VUI::Poller::VidentiGLFWPoller;
+	uiPoller->AttachGLFW(window);
 
+	uiHandler.AttachPoller((VUI::Poller::VidentiPoller*)uiPoller);
 	uiHandler.AttachRenderer(new VUI::Renderer::VidentiAngleRenderer(), { WINDOW_WIDTH,WINDOW_HEIGHT });
 	uiHandler.Init();
 

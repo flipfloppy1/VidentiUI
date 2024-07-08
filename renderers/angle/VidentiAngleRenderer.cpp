@@ -25,6 +25,8 @@ const char* colorFragShader =
 "flat in vec4 finalColor;\n"
 "void main()\n"
 "{\n"
+"if (finalColor.w == 0.0f)\n"
+"discard;\n"
 "color = finalColor;\n"
 "}\n";
 
@@ -56,6 +58,8 @@ const char* textureFragShader =
 "uniform sampler2D mainTex;\n"
 "void main()\n"
 "{\n"
+"if (texture(mainTex,texCoord).w == 0.0f || tint.w == 0.0f)\n"
+"discard;\n"
 "color = tint * texture(mainTex,texCoord);\n"
 "}\n";
 
@@ -240,4 +244,14 @@ void VUI::Renderer::VidentiAngleRenderer::Init()
 {
 	CreateShader(colorVertShader, colorFragShader, &colorProgramID);
 	CreateShader(textureVertShader, textureFragShader, &textureProgramID);
+}
+
+void VUI::Renderer::VidentiAngleRenderer::StartFrame()
+{
+	glDisable(GL_DEPTH_TEST);
+}
+
+void VUI::Renderer::VidentiAngleRenderer::EndFrame()
+{
+	glEnable(GL_DEPTH_TEST);
 }

@@ -9,6 +9,10 @@
 #include <string>
 #include <utility>
 #include "Tests.h"
+#include "VidentiUI.h"
+#include "VidentiParse.h"
+#include "VidentiAngleRenderer.h"
+#include "VidentiGLFWPoller.h"
 
 static std::chrono::seconds runTime;
 

@@ -7,6 +7,7 @@
 #include "VidentiRenderer.h"
 #include "VidentiMath.h"
 #include "lua.hpp"
+#include "VidentiPoller.h"
 
 namespace VUI
 {
@@ -66,8 +67,10 @@ namespace VUI
 		void EndFrame();
 		void ParseUI(const char* filepath);
 		void GenUI();
+		void RefreshEvents();
 		void SetLuaGlobals(float deltaTime);
 		void AttachRenderer(Renderer::VidentiRenderer* renderer, Math::vec2 windowDimensions);
+		void AttachPoller(Poller::VidentiPoller* poller);
 		std::string* GetLuaNextScript();
 
 		std::string* nextScript = nullptr;
@@ -104,8 +107,10 @@ namespace VUI
 		}
 	private:
 		Renderer::VidentiRenderer* uiRenderer = nullptr;
+		Poller::VidentiPoller* uiPoller = nullptr;
 		void InitRenderer();
 		void InitLua();
+		void InitPoller();
 		Math::vec2 windowDimensions;
 		lua_State* lua = nullptr;
 	};
@@ -114,7 +119,7 @@ namespace VUI
 		{"dimensions",std::any(Math::vec2(0.1,0.1))},
 		{"position",std::any(Math::vec2(0.0,0.0))},
 		{"layer",std::any(int32_t(0))},
-		{"color",std::any(Math::u8vec4(0,0,0,255))},
+		{"color",std::any(Math::u8vec4(255,255,255,255))},
 		{"texture",std::any(std::string(""))},
 		{"ratioTransform",std::any(false)}
 	};

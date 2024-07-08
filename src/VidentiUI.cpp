@@ -15,12 +15,12 @@ void VUI::VidentiHandler::Render()
 
 void VUI::VidentiHandler::StartFrame()
 {
-
+	uiRenderer->StartFrame();
 }
 
 void VUI::VidentiHandler::EndFrame()
 {
-
+	uiRenderer->EndFrame();
 }
 
 void VUI::VidentiHandler::ParseUI(const char* filepath)
@@ -102,6 +102,22 @@ void VUI::VidentiHandler::AttachRenderer(VUI::Renderer::VidentiRenderer* rendere
 	VidentiHandler::uiRenderer = renderer;
 }
 
+void VUI::VidentiHandler::AttachPoller(VUI::Poller::VidentiPoller* poller)
+{
+	uiPoller = poller;
+}
+
+void VUI::VidentiHandler::RefreshEvents()
+{
+	if (uiPoller == nullptr)
+	{
+		Log(VUI::ERROR_MAJOR, "VidentiHandler::RefreshEvents: UI Poller has not been defined, attach using AttachPoller()");
+		return;
+	}
+
+	uiPoller->RefreshEvents();
+}
+
 void VUI::Log(ErrorCode errorCode, const char* message)
 {
 	std::string errorString;
@@ -155,6 +171,11 @@ std::vector<VUI::Renderer::UIVertex> VUI::UIElement::GenVerts()
 	return vertices;
 }
 
+void VUI::VidentiHandler::InitPoller()
+{
+	uiPoller->Init();
+}
+
 void VUI::VidentiHandler::InitRenderer()
 {
 	if (uiRenderer == nullptr)
@@ -175,6 +196,7 @@ void VUI::VidentiHandler::Init()
 {
 	InitLua();
 	InitRenderer();
+	InitPoller();
 }
 
 std::string* VUI::VidentiHandler::GetLuaNextScript()

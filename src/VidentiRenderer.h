@@ -45,6 +45,8 @@ namespace VUI
 			virtual void Init() = 0;
 			virtual void CompileRender() = 0;
 			virtual void CleanCompiledRender() = 0;
+			virtual void StartFrame() = 0;
+			virtual void EndFrame() = 0;
 			void InstructCompilation()
 			{
 				compiled = false;

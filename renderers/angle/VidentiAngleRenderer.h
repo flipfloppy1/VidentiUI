@@ -22,6 +22,8 @@ namespace VUI
 			virtual void CompileRender();
 			virtual void CleanCompiledRender();
 			virtual void Init();
+			virtual void StartFrame();
+			virtual void EndFrame();
 		private:
 			std::unordered_map<std::string, TextureID> loadedTextures;
 			GLuint colorProgramID;

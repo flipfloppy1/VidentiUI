@@ -12,6 +12,7 @@ namespace VUI
 		public:
 			virtual void RefreshEvents();
 			virtual KeyMap GetKeyStates();
+			virtual MouseState GetMouseState();
 			virtual void Init();
 			void AttachGLFW(GLFWwindow* window);
 			class GLFWCallbackHandler

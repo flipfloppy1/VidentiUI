@@ -24,13 +24,23 @@ void VUI::Poller::VidentiGLFWPoller::RefreshEvents()
 {
 	while (!keyMapMutex.try_lock()) {} // Wait
 	for (auto [key, state] : keyMap)
-	{
 		state.pressPrev = state.pressCurr;
-		state.releaseCurr = state.releasePrev;
-	}
+
 	keyMapMutex.unlock();
+	mouseState.mouseDownPrev = mouseState.mouseDownCurr;
 
 	glfwPollEvents();
+
+	double x, y;
+	glfwGetCursorPos(window, &x, &y);
+
+	mouseState.mouseX = x;
+	mouseState.mouseY = y;
+
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS)
+		mouseState.mouseDownCurr = true;
+	else
+		mouseState.mouseDownCurr = false;
 }
 
 VUI::Poller::KeyMap VUI::Poller::VidentiGLFWPoller::GetKeyStates()
@@ -45,13 +55,14 @@ void VUI::Poller::VidentiGLFWPoller::GLFWCallbackHandler::MapKey(GLFWwindow* win
 	KeyState& keyState = uiPoller->keyMap[key];
 
 	if (action == GLFW_PRESS)
-	{
 		keyState.pressCurr = true;
-	}
+	else
+		keyState.pressCurr = false;
 
-	if (action == GLFW_RELEASE)
-	{
-		keyState.releaseCurr = true;
-	}
 	uiPoller->keyMapMutex.unlock();
+}
+
+VUI::Poller::MouseState VUI::Poller::VidentiGLFWPoller::GetMouseState()
+{
+	return mouseState;
 }

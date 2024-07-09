@@ -41,7 +41,8 @@ void VUI::VidentiHandler::ParseUI(const char* filepath)
 
 	if (luaL_dofile(lua, filepath))
 	{
-		VUI::Log(ERROR_MAJOR, std::string("ParseUI: Lua was unable to load/run file \"" + std::string(filepath) + "\", returning with empty UI").c_str());
+		std::string errorStr = lua_tostring(lua, -1);
+		VUI::Log(ERROR_MAJOR, std::string("ParseUI: Lua was unable to load/run file \"" + std::string(filepath) + "\" with error: \"" + errorStr + "\" returning with empty UI").c_str());
 		elements.clear();
 		return;
 	}
@@ -218,4 +219,23 @@ void VUI::VidentiHandler::SetLuaGlobals(float deltaTime)
 	lua_setglobal(lua, "VUI_winY");
 	lua_pushnumber(lua, deltaTime);
 	lua_setglobal(lua, "VUI_dt");
+
+	VUI::Poller::MouseState mouseState = uiPoller->GetMouseState();
+
+	lua_createtable(lua, 3, 2);
+	lua_setglobal(lua, "VUI_mouse");
+
+	lua_getglobal(lua, "VUI_mouse");
+	int luaMouseIndex = lua_gettop(lua);
+	lua_pushboolean(lua, mouseState.mouseDownCurr && !mouseState.mouseDownPrev);
+	lua_setfield(lua, luaMouseIndex, "onPress");
+	lua_pushboolean(lua, mouseState.mouseDownPrev && !mouseState.mouseDownCurr);
+	lua_setfield(lua, luaMouseIndex, "onRelease");
+	lua_pushboolean(lua, mouseState.mouseDownCurr);
+	lua_setfield(lua, luaMouseIndex, "down");
+	lua_pushnumber(lua, mouseState.mouseX / windowDimensions.x);
+	lua_setfield(lua, luaMouseIndex, "x");
+	lua_pushnumber(lua, mouseState.mouseY / windowDimensions.y);
+	lua_setfield(lua, luaMouseIndex, "y");
+	lua_pop(lua, 1);
 }

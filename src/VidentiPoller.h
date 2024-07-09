@@ -2,6 +2,7 @@
 
 #include <map>
 #include <mutex>
+#include <atomic>
 
 namespace VUI
 {
@@ -11,8 +12,14 @@ namespace VUI
 		{
 			bool pressCurr;
 			bool pressPrev;
-			bool releaseCurr;
-			bool releasePrev;
+		};
+
+		struct MouseState
+		{
+			double mouseX;
+			double mouseY;
+			bool mouseDownCurr;
+			bool mouseDownPrev;
 		};
 
 		typedef std::map<int, KeyState> KeyMap;
@@ -23,8 +30,10 @@ namespace VUI
 			virtual void RefreshEvents() = 0;
 			virtual KeyMap GetKeyStates() = 0;
 			virtual void Init() = 0;
+			virtual MouseState GetMouseState() = 0;
 		protected:
 			KeyMap keyMap;
+			MouseState mouseState;
 			std::mutex keyMapMutex;
 		};
 	}

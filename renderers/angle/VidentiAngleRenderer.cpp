@@ -160,12 +160,12 @@ void VUI::Renderer::VidentiAngleRenderer::CleanCompiledRender()
 		glDeleteVertexArrays(vertArrays.size(), vertArrays.data());
 	if (!vertBuffers.empty())
 		glDeleteBuffers(vertBuffers.size(), vertBuffers.data());
+	compiledRenderData.clear();
 }
 
 void VUI::Renderer::VidentiAngleRenderer::CompileRender()
 {
 	CleanCompiledRender();
-	compiledRenderData.clear();
 	for (auto iter = elementVertices.begin(); iter != elementVertices.end(); iter++)
 	{
 			GLuint vertBuffer, vertArray;

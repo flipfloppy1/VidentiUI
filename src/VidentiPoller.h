@@ -16,10 +16,10 @@ namespace VUI
 
 		struct MouseState
 		{
-			double mouseX;
-			double mouseY;
-			bool mouseDownCurr;
-			bool mouseDownPrev;
+			double mouseX = 0.0;
+			double mouseY = 0.0;
+			bool mouseDownCurr = false;
+			bool mouseDownPrev = false;
 		};
 
 		typedef std::map<int, KeyState> KeyMap;

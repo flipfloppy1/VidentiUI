@@ -98,12 +98,13 @@ static void Update(std::chrono::seconds runTime, float deltaTime)
 {
 	uiHandler.SetLuaGlobals(deltaTime);
 
-	if (uiHandler.GetLuaNextScript() != nullptr)
+	if (uiHandler.GetLuaNextScript() != "")
 	{
-		uiHandler.ParseUI(uiHandler.GetLuaNextScript()->c_str());
+		uiHandler.ParseUI(uiHandler.GetLuaNextScript().c_str());
 		uiHandler.GenUI();
 	}
 
+	uiHandler.CollectLuaSignals();
 }
 
 static void Render(GLFWwindow* window)
@@ -121,6 +122,12 @@ static void Render(GLFWwindow* window)
 static void Input()
 {
 	uiHandler.RefreshEvents();
+
+	if (uiHandler.HasSignalled("quit"))
+	{
+		shouldQuit = true;
+	}
+
 }
 
 int main()
@@ -145,8 +152,8 @@ int main()
 
 	while (!((glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) || shouldQuit))
 	{
-		Update(runTime, deltaTime.count() / 1000.0f);
 		Input();
+		Update(runTime, deltaTime.count() / 1000.0f);
 		Render(window);
 		runTime = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::high_resolution_clock::now() - startTime);
 		deltaTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - delta);

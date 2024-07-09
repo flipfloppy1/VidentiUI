@@ -69,13 +69,18 @@ namespace VUI
 		void GenUI();
 		void RefreshEvents();
 		void SetLuaGlobals(float deltaTime);
+		void CollectLuaSignals();
+		bool HasSignalled(std::string signal);
+		bool HasSignalled(const char* signal);
 		void AttachRenderer(Renderer::VidentiRenderer* renderer, Math::vec2 windowDimensions);
 		void AttachPoller(Poller::VidentiPoller* poller);
-		std::string* GetLuaNextScript();
+		void DisableSignal(std::string signal);
+		void DisableSignal(const char* signal);
+		std::string GetLuaNextScript();
 
-		std::string* nextScript = nullptr;
+		std::string nextScript = "";
 		std::map<std::string, UIElement*> elements;
-
+		std::map<std::string, bool> signals;
 		inline UIElement* FindElement(std::string id)
 		{
 			for (auto [id, element] : elements)

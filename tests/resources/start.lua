@@ -8,5 +8,8 @@ ui.buttons.button3 = { position = { y = 0.8 }, dimensions = { x = 0.175, y = 0.0
 ui.buttons.button1.position.x = 0.5 - ui.buttons.button1.dimensions.x / 2
 ui.buttons.button2.position.x = 0.5 - ui.buttons.button2.dimensions.x / 2
 ui.buttons.button3.position.x = 0.5 - ui.buttons.button3.dimensions.x / 2
+ui.buttons.button1.clicked = false;
+ui.buttons.button2.clicked = false;
+ui.buttons.button3.clicked = false;
 time = 0.0;
 VUI_nextScript = "resources/update.lua";

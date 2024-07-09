@@ -47,12 +47,13 @@ void VUI::VidentiHandler::ParseUI(const char* filepath)
 		return;
 	}
 
-	
+
 	lua_getglobal(lua, "ui");
 
 	if (lua_isnil(lua, -1))
 	{
-		VUI::Log(ERROR_MINOR, std::string("ParseUI: Variable \'ui\' did not exist in \"" + std::string(filepath) + "\", returning with empty UI").c_str());
+		if (!elements.empty() && uiRenderer != nullptr)
+			uiRenderer->CleanCompiledRender();
 		elements.clear();
 		return;
 	}
@@ -64,12 +65,12 @@ void VUI::VidentiHandler::ParseUI(const char* filepath)
 		return;
 	}
 
-	std::map<std::string,UIElement*> newElements;
-	
+	std::map<std::string, UIElement*> newElements;
+
 	newElements = ParseObjects(lua, "buttons");
 	for (auto iter = newElements.begin(); iter != newElements.end(); iter++)
 	{
-		elements.insert_or_assign(iter->first,iter->second);
+		elements.insert_or_assign(iter->first, iter->second);
 	}
 
 	for (auto [id, element] : elements)
@@ -83,10 +84,7 @@ void VUI::VidentiHandler::ParseUI(const char* filepath)
 void VUI::VidentiHandler::GenUI()
 {
 	if (elements.empty())
-	{
-		Log(VUI::ERROR_MINOR, "VidentiHandler::GenUI: No elements to generate, call ParseUI() to add elements");
 		return;
-	}
 
 	if (uiRenderer == nullptr)
 	{
@@ -200,13 +198,13 @@ void VUI::VidentiHandler::Init()
 	InitPoller();
 }
 
-std::string* VUI::VidentiHandler::GetLuaNextScript()
+std::string VUI::VidentiHandler::GetLuaNextScript()
 {
 	lua_getglobal(lua, "VUI_nextScript");
 	if (lua_isnil(lua, -1))
-		nextScript = nullptr;
+		nextScript = "";
 	if (lua_isstring(lua, -1))
-		nextScript = new std::string(lua_tostring(lua, -1));
+		nextScript = std::string(lua_tostring(lua, -1));
 	lua_pop(lua, 1);
 	return nextScript;
 }
@@ -238,4 +236,59 @@ void VUI::VidentiHandler::SetLuaGlobals(float deltaTime)
 	lua_pushnumber(lua, mouseState.mouseY / windowDimensions.y);
 	lua_setfield(lua, luaMouseIndex, "y");
 	lua_pop(lua, 1);
+	lua_newtable(lua);
+	lua_setglobal(lua, "VUI_signal");
+}
+
+void VUI::VidentiHandler::CollectLuaSignals()
+{
+	lua_getglobal(lua, "VUI_signal");
+	if (lua_isnil(lua, -1))
+	{
+		lua_pop(lua, 1);
+		return;
+	}
+
+	int tableIndex = lua_gettop(lua);
+
+	lua_pushnil(lua);
+	while (lua_next(lua, tableIndex) != 0)
+	{
+		if (!lua_isstring(lua, -2) || !lua_isboolean(lua,-1))
+		{
+			lua_pop(lua, 1);
+			continue;
+		}
+
+		signals[lua_tostring(lua, -2)] = lua_toboolean(lua, -1);
+		lua_pop(lua, 1);
+	}
+}
+
+bool VUI::VidentiHandler::HasSignalled(std::string signal)
+{
+	if (signals.contains(signal))
+		return signals.at(signal);
+
+	return false;
+}
+
+bool VUI::VidentiHandler::HasSignalled(const char* signal)
+{
+	if (signals.contains(signal))
+		return signals.at(signal);
+
+	return false;
+}
+
+void VUI::VidentiHandler::DisableSignal(std::string signal)
+{
+	if (signals.contains(signal))
+		signals.at(signal) = false;
+}
+
+void VUI::VidentiHandler::DisableSignal(const char* signal)
+{
+	if (signals.contains(signal))
+		signals.at(signal) = false;
 }

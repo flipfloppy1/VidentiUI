@@ -11,7 +11,7 @@ endif()
 project("VidentiUI")
 
 message("VidentiUI: Setting build properties...")
-add_compile_definitions(GL_GLEXT_PROTOTYPES)
+add_compile_definitions(GL_GLEXT_PROTOTYPES GLFW_INCLUDE_NONE)
 set(BUILD_SHARED_LIBS OFF)
 set_property(GLOBAL PROPERTY CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -41,6 +41,12 @@ FetchContent_Declare(
 	GIT_TAG 7b6aead9fb88b3623e3b3725ebb42670cbe4c579 # glfw 3.4, has to be compiled from source on linux
 )
 endif()
+
+FetchContent_Declare(
+	freetype
+	GIT_REPOSITORY https://github.com/freetype/freetype.git
+	GIT_TAG 920c5502cc3ddda88f6c7d85ee834ac611bb11cc # version 2.13.2
+)
 
 FetchContent_Declare(
 	stb
@@ -74,7 +80,7 @@ endif()
 message("VidentiUI: Added dependencies")
 
 message("VidentiUI: Fetching/compiling dependencies...")
-FetchContent_MakeAvailable(json stb luajit)
+FetchContent_MakeAvailable(json stb luajit freetype)
 
 if (WIN32 AND NOT (EXISTS "${luajit_SOURCE_DIR}/src/lua51.lib"))
 	execute_process(COMMAND cmd.exe /c "cd ${luajit_SOURCE_DIR}/src/ && msvcbuild.bat static") # this assumes visual studio build tools are available, as msvcbuild.bat requires it
@@ -99,10 +105,12 @@ endif()
 message("VidentiUI: Fetched/compiled dependencies")
 
 # Add source
-add_library (VidentiUI "src/VidentiUI.cpp" "src/VidentiUI.h" "src/VidentiParse.cpp" "src/VidentiParse.h" "src/VidentiRenderer.h"  "src/VidentiMath.h")
+add_library (VidentiUI "src/VidentiUI.cpp" "src/VidentiUI.h" "src/VidentiParse.cpp" "src/VidentiParse.h" "src/VidentiRenderer.h"  "src/VidentiMath.h" "src/VidentiRenderer.cpp")
 target_include_directories(VidentiUI PUBLIC ${json_SOURCE_DIR}/single_include)
 target_include_directories(VidentiUI PUBLIC ${luajit_SOURCE_DIR}/src)
+target_include_directories(VidentiUI PUBLIC ${freetype_SOURCE_DIR}/include)
 target_link_libraries(VidentiUI INTERFACE luajitlib)
+target_link_libraries(VidentiUI PUBLIC freetype)
 set_property(TARGET VidentiUI PROPERTY CXX_STANDARD 20)
 message("VidentiUI: Finished build configuration")
 
@@ -134,12 +142,8 @@ if (VIDENTI_TESTS)
 	target_link_libraries(Tests PUBLIC glfw3) # Use pre-compiled lib
 	else()
 	target_link_libraries(Tests PUBLIC glfw.so.3.3) # Must be installed with apt-get if not already available
-	target_link_libraries(Tests PUBLIC ANGLE)
-	target_link_libraries(Tests PUBLIC X11)
-	target_link_libraries(Tests PUBLIC xcb)
-	target_link_libraries(Tests PUBLIC Xext)
-	target_link_libraries(Tests PUBLIC wayland-client)
-	target_link_libraries(Tests PUBLIC drm)
+	target_link_libraries(Tests PUBLIC GLESv2)
+	target_link_libraries(Tests PUBLIC EGL)
 	endif()
 	
 	target_link_libraries(Tests PUBLIC VidentiUI)

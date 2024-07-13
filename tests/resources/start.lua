@@ -11,5 +11,21 @@ ui.buttons.button3.position.x = 0.5 - ui.buttons.button3.dimensions.x / 2
 ui.buttons.button1.clicked = false;
 ui.buttons.button2.clicked = false;
 ui.buttons.button3.clicked = false;
+ui.buttons.button1.font = "resources/fonts/CourierScreenplay.ttf";
+ui.buttons.button1.text = "Play";
+ui.buttons.button1.textPos = { x = 0.465, y = 0.463 };
+ui.buttons.button3.text = "Quit";
+ui.buttons.button3.font = "resources/fonts/CourierScreenplay.ttf";
+ui.buttons.button3.textPos = {};
+ui.buttons.button3.textPos.x = 0.465;
+ui.buttons.button3.textPos.y = 0.863;
+ui.buttons.button3.fontColor = { r=255,g=255,b=255,a=255 };
 time = 0.0;
 VUI_nextScript = "resources/update.lua";
+
+ui.buttons.timeText = {};
+ui.buttons.timeText.font = "resources/fonts/Bagnard.otf";
+ui.buttons.timeText.textPos = { x = 0.02, y = 0.07 };
+ui.buttons.timeText.color = { r = 255, g = 255, b = 255, a = 0};
+ui.buttons.timeText.dimensions = { x = 0, y = 0 };
+

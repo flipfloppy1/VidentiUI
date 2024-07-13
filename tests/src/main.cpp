@@ -1,6 +1,6 @@
 
 #include "main.h"
-#define _DEBUG
+
 static void printDebug(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
 	const GLchar* message, const void* userParam)
 {

@@ -17,13 +17,14 @@ namespace VUI
 		public:
 			virtual VUI::Renderer::TextureID LoadTexture(std::string filepath);
 			virtual void GenElements(std::map<std::string,UIElement*> elements);
-			virtual ElementVertices GenVerts(UIElement* element);
+			virtual ElementRenderData GenVerts(UIElement* element);
 			virtual void Render();
 			virtual void CompileRender();
 			virtual void CleanCompiledRender();
 			virtual void Init();
 			virtual void StartFrame();
 			virtual void EndFrame();
+			virtual TextureID LoadFontTexture(std::string filepath);
 		private:
 			std::unordered_map<std::string, TextureID> loadedTextures;
 			GLuint colorProgramID;

@@ -115,15 +115,19 @@ VUI::Renderer::TextureID VUI::Renderer::VidentiAngleRenderer::LoadTexture(std::s
 void VUI::Renderer::VidentiAngleRenderer::GenElements(std::map<std::string, UIElement* > elements)
 {
 	for (auto [id, element] : elements)
-		elementVertices.insert(std::pair{ element->layer,ElementVertices(GenVerts(element)) });
+		elementVertices.insert(std::pair{ element->layer,GenVerts(element)});
 
 	generated = true;
 	compiled = false;
 }
 
-VUI::Renderer::ElementVertices VUI::Renderer::VidentiAngleRenderer::GenVerts(UIElement* element)
+VUI::Renderer::ElementRenderData VUI::Renderer::VidentiAngleRenderer::GenVerts(UIElement* element)
 {
-	return ElementVertices(element->GenVerts(), LoadTexture(element->texture));
+	VUI::Renderer::TextureID texID = LoadTexture(element->texture);
+	VUI::Renderer::TextureID fontTexID = LoadFontTexture(element->font);
+	ElementVertices uiVertices = element->GenVerts();
+
+	return { uiVertices.vertices, texID, uiVertices.textVertices, fontTexID };
 }
 
 void VUI::Renderer::VidentiAngleRenderer::Render()
@@ -168,11 +172,18 @@ void VUI::Renderer::VidentiAngleRenderer::CompileRender()
 	CleanCompiledRender();
 	for (auto iter = elementVertices.begin(); iter != elementVertices.end(); iter++)
 	{
+		for (int i = 0; i < 2; i++)
+		{
+			if (i && iter->second.textVertices.empty())
+				continue;
+			std::vector<VUI::Renderer::UIVertex>* vertices = i ? &iter->second.textVertices : &iter->second.vertices;
+			TextureID texID = i ? iter->second.fontTextureID : iter->second.textureID;
+			int32_t layer = i ? iter->first + 1 : iter->first;
 			GLuint vertBuffer, vertArray;
 			glGenVertexArrays(1, &vertArray);
 			glGenBuffers(1, &vertBuffer);
 			glBindBuffer(GL_ARRAY_BUFFER, vertBuffer);
-			glBufferData(GL_ARRAY_BUFFER, iter->second.vertices.size() * sizeof(VUI::Renderer::UIVertex), iter->second.vertices.data(), GL_STATIC_DRAW);
+			glBufferData(GL_ARRAY_BUFFER, vertices->size() * sizeof(VUI::Renderer::UIVertex), vertices->data(), GL_STATIC_DRAW);
 			glBindVertexArray(vertArray);
 			glVertexAttribPointer(0, 2, GL_FLOAT, false, sizeof(float) * 4 + sizeof(unsigned int), NULL);
 			glEnableVertexAttribArray(0);
@@ -182,7 +193,8 @@ void VUI::Renderer::VidentiAngleRenderer::CompileRender()
 			glEnableVertexAttribArray(2);
 			glBindVertexArray(0);
 
-			compiledRenderData.insert({ iter->first,RenderData(std::any_cast<GLuint>(iter->second.textureID),vertArray,vertBuffer,iter->second.vertices.size()) });
+			compiledRenderData.insert({ layer,RenderData(std::any_cast<GLuint>(texID),vertArray,vertBuffer,vertices->size()) });
+		}
 	}
 	compiled = true;
 }
@@ -254,4 +266,41 @@ void VUI::Renderer::VidentiAngleRenderer::StartFrame()
 void VUI::Renderer::VidentiAngleRenderer::EndFrame()
 {
 	glEnable(GL_DEPTH_TEST);
+}
+
+VUI::Renderer::TextureID VUI::Renderer::VidentiAngleRenderer::LoadFontTexture(std::string filepath)
+{
+	if (filepath == "")
+		return TextureID(GLuint(0));
+
+	if (loadedTextures.contains(filepath))
+		return loadedTextures.at(filepath);
+
+	TexInfo texInfo = LoadFont(filepath);
+	GLuint texID;
+
+	if (texInfo.index + texInfo.height * texInfo.width * 4 > typefaceTexBytes.size())
+	{
+		VUI::Log(VUI::ERROR_MAJOR, "Font texture info did not appear to be loaded");
+		return TextureID(GLuint(0));
+	}
+
+	glGenTextures(1, &texID);
+	glBindTexture(GL_TEXTURE_2D, texID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, texInfo.width, texInfo.height, GL_NONE, GL_RGBA, GL_UNSIGNED_BYTE, typefaceTexBytes.data() + texInfo.index);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	loadedTextures[filepath] = TextureID(texID);
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texID);
+	glUseProgram(textureProgramID);
+	GLint loc = glGetUniformLocation(textureProgramID, "mainTex");
+	glUniform1i(loc, 0);
+
+	return TextureID(texID);
 }

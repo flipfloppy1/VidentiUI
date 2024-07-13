@@ -11,10 +11,6 @@
 
 namespace VUI
 {
-	namespace Renderer
-	{
-		class VidentiRenderer;
-	}
 
 	enum ErrorCode : uint8_t
 	{
@@ -38,9 +34,13 @@ namespace VUI
 		Math::u8vec4 color;
 		std::string text;
 		std::string texture;
+		std::string font;
+		Math::vec2 textPos;
+		int32_t textSize;
+		Math::u8vec4 fontColor;
 		bool ratioTransform[2];
 		int32_t layer;
-		virtual std::vector<Renderer::UIVertex> GenVerts();
+		virtual VUI::Renderer::ElementVertices GenVerts();
 	protected:
 		VidentiHandler* uiHandler;
 	};
@@ -60,6 +60,8 @@ namespace VUI
 
 	class VidentiHandler
 	{
+
+		friend class UIElement;
 	public:
 		void Init();
 		void StartFrame();
@@ -125,8 +127,12 @@ namespace VUI
 		{"position",std::any(Math::vec2(0.0,0.0))},
 		{"layer",std::any(int32_t(0))},
 		{"color",std::any(Math::u8vec4(255,255,255,255))},
+		{"fontColor",std::any(Math::u8vec4(255,255,255,255))},
 		{"texture",std::any(std::string(""))},
-		{"ratioTransform",std::any(false)}
+		{"textPos",std::any(Math::vec2(0.0,0.0))},
+		{"textSize",std::any(int32_t(0)) },
+		{"font", std::any(std::string(""))},
+		{"text", std::any(std::string(""))}
 	};
 }
 

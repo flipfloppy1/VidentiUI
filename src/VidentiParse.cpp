@@ -187,5 +187,18 @@ VUI::UIElement* VUI::ParseProperties(lua_State* lua, int elementIndex, std::stri
 	else
 		newElement->layer = std::any_cast<int32_t>(propertyDefaults.at("layer"));
 
+	if (HasValidVec2(lua, -1, "textPos"))
+		newElement->textPos = GetVec2(lua, -1, "textPos");
+	else
+		newElement->textPos = std::any_cast<Math::vec2>(propertyDefaults.at("textPos"));
+
+	newElement->textSize = HasValidInt(lua, -1, "textSize") ? GetInt(lua, -1, "textSize") : std::any_cast<int32_t>(propertyDefaults.at("textSize"));
+
+	newElement->text = HasValidString(lua, -1, "text") ? GetString(lua, -1, "text") : std::any_cast<std::string>(propertyDefaults.at("text"));
+
+	newElement->font = HasValidString(lua, -1, "font") ? GetString(lua, -1, "font") : std::any_cast<std::string>(propertyDefaults.at("font"));
+
+	newElement->fontColor = HasValidColor(lua, -1, "fontColor") ? GetColor(lua, -1, "fontColor") : std::any_cast<Math::u8vec4>(propertyDefaults.at("fontColor"));
+
 	return newElement;
 }

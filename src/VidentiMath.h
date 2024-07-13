@@ -29,9 +29,17 @@ namespace VUI
 			{
 				return { x * rhs,y * rhs };
 			}
-			inline bool operator==(vec2& rhs)
+			inline bool operator==(vec2 const& rhs)
 			{
 				return x == rhs.x && y == rhs.y;
+			}
+			inline vec2 operator/(vec2 const& rhs)
+			{
+				return { x / rhs.x, y / rhs.y };
+			}
+			inline void operator/=(vec2 const& rhs)
+			{
+				*this = *this / rhs;
 			}
 			// Creates a vec2 of { x, y }
 			vec2(float x, float y)

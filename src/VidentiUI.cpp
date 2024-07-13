@@ -156,10 +156,37 @@ VUI::Message VUI::FetchMessage()
 }
 
 // Simple vertices for a box, for now
-std::vector<VUI::Renderer::UIVertex> VUI::UIElement::GenVerts()
+VUI::Renderer::ElementVertices VUI::UIElement::GenVerts()
 {
+	std::vector<Renderer::UIVertex> textVertices;
 	std::vector<Renderer::UIVertex> vertices;
 	Math::vec2 windowDimensions = uiHandler->GetWindowDimensions();
+
+	if (text != "")
+	{
+		float advance = 0.0f;
+		for (int i = 0; i < text.size(); i++)
+		{
+			VUI::Renderer::VidentiRenderer::TexInfo texInfo = uiHandler->uiRenderer->GetTypeFaceInfo(font);
+			VUI::Renderer::VidentiRenderer::GlyphInfo glyphInfo = uiHandler->uiRenderer->GetGlyphInfo(font, text[i]);
+			Math::vec2 texPos = glyphInfo.pos / Math::vec2{ (float)texInfo.width, (float)texInfo.height };
+			Math::vec2 texDim = glyphInfo.dim / Math::vec2{ (float)texInfo.width, (float)texInfo.height };
+			glyphInfo.advance /= windowDimensions.x;
+			glyphInfo.dim = (Math::vec2{ glyphInfo.dim.x - glyphInfo.pos.x, glyphInfo.pos.y - glyphInfo.dim.y }) / windowDimensions;
+			glyphInfo.offset /= windowDimensions;
+			glyphInfo.pos /= windowDimensions;
+			Math::vec2 pos = { (textPos.x + advance + glyphInfo.offset.x) * 2.0f - 1.0f, -((textPos.y - glyphInfo.offset.y) * 2.0f - 1.0f)};
+			Math::vec2 dim = { (glyphInfo.dim.x) * 2.0f, -(glyphInfo.dim.y * 2.0f) };
+			textVertices.push_back(Renderer::UIVertex(Math::vec2{ pos.x, pos.y }, fontColor, { texPos.x, texDim.y }));
+			textVertices.push_back(Renderer::UIVertex(Math::vec2{ pos.x, pos.y + dim.y }, fontColor, texPos));
+			textVertices.push_back(Renderer::UIVertex(Math::vec2{ pos.x + dim.x, pos.y + dim.y }, fontColor, { texDim.x,texPos.y }));
+			textVertices.push_back(Renderer::UIVertex(Math::vec2{ pos.x + dim.x, pos.y + dim.y }, fontColor, { texDim.x, texPos.y }));
+			textVertices.push_back(Renderer::UIVertex(Math::vec2{ pos.x + dim.x, pos.y }, fontColor, texDim));
+			textVertices.push_back(Renderer::UIVertex(Math::vec2{ pos.x, pos.y }, fontColor, { texPos.x,texDim.y }));
+
+			advance += glyphInfo.advance;
+		}
+	}
 
 	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f) }, color, { 0.0f,1.0f }));
 	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f + dimensions.y * 2.0f) }, color, { 0.0f,0.0f }));
@@ -167,7 +194,7 @@ std::vector<VUI::Renderer::UIVertex> VUI::UIElement::GenVerts()
 	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + dimensions.x * 2.0f, -(position.y * 2.0f - 1.0f + dimensions.y * 2.0f) }, color, { 1.0f,0.0f }));
 	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f + dimensions.x * 2.0f, -(position.y * 2.0f - 1.0f) }, color, { 1.0f,1.0f }));
 	vertices.push_back(Renderer::UIVertex(Math::vec2{ position.x * 2.0f - 1.0f, -(position.y * 2.0f - 1.0f) }, color, { 0.0f,1.0f }));
-	return vertices;
+	return { vertices, textVertices };
 }
 
 void VUI::VidentiHandler::InitPoller()
@@ -181,6 +208,7 @@ void VUI::VidentiHandler::InitRenderer()
 		VUI::Log(ERROR_FATAL, "VidentiHandler::InitRenderer: Renderer was not attached before initialisation, call AttachRenderer(renderer, windowDimensions) before Init()");
 	uiRenderer->Init();
 	uiRenderer->SetWindowDimensions(windowDimensions);
+	uiRenderer->InitFreetype();
 }
 void VUI::VidentiHandler::InitLua()
 {

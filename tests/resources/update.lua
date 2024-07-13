@@ -41,3 +41,5 @@ if (ui.buttons.button3.clicked) then
     VUI_nextScript = "resources/quit.lua"
     ui.buttons.button3.clicked = false
 end
+
+ui.buttons.timeText.text = "Time played: " .. math.floor(time) .. "s"

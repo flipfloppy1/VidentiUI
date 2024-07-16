@@ -28,4 +28,3 @@ ui.buttons.timeText.font = "resources/fonts/Bagnard.otf";
 ui.buttons.timeText.textPos = { x = 0.02, y = 0.07 };
 ui.buttons.timeText.color = { r = 255, g = 255, b = 255, a = 0};
 ui.buttons.timeText.dimensions = { x = 0, y = 0 };
-

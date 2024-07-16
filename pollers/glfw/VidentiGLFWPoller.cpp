@@ -23,7 +23,7 @@ void VUI::Poller::VidentiGLFWPoller::Init()
 void VUI::Poller::VidentiGLFWPoller::RefreshEvents()
 {
 	while (!keyMapMutex.try_lock()) {} // Wait
-	for (auto [key, state] : keyMap)
+	for (auto& [key, state] : keyMap)
 		state.pressPrev = state.pressCurr;
 
 	keyMapMutex.unlock();
@@ -54,7 +54,7 @@ void VUI::Poller::VidentiGLFWPoller::GLFWCallbackHandler::MapKey(GLFWwindow* win
 	while (!uiPoller->keyMapMutex.try_lock()) {} // Wait
 	KeyState& keyState = uiPoller->keyMap[key];
 
-	if (action == GLFW_PRESS)
+	if (action == GLFW_PRESS || action == GLFW_REPEAT)
 		keyState.pressCurr = true;
 	else
 		keyState.pressCurr = false;

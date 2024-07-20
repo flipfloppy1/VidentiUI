@@ -139,14 +139,14 @@ void VUI::Renderer::VidentiAngleRenderer::Render()
 		if (iter->second.textureID != 0) // if the element has a texture
 		{
 			glUseProgram(textureProgramID);
-			glBindVertexArray(iter->second.vertArray);
 			glBindTexture(GL_TEXTURE_2D, iter->second.textureID);
+			glBindVertexBuffer(0, iter->second.vertBuffer, 0, vertSize);
 			glDrawArrays(GL_TRIANGLES, 0, iter->second.vertCount);
 		}
 		else
 		{
 			glUseProgram(colorProgramID);
-			glBindVertexArray(iter->second.vertArray);
+			glBindVertexBuffer(0, iter->second.vertBuffer, 0, vertSize);
 			glDrawArrays(GL_TRIANGLES, 0, iter->second.vertCount);
 		}
 	}
@@ -154,14 +154,11 @@ void VUI::Renderer::VidentiAngleRenderer::Render()
 
 void VUI::Renderer::VidentiAngleRenderer::CleanCompiledRender()
 {
-	std::vector<GLuint> vertArrays, vertBuffers;
+	std::vector<GLuint> vertBuffers;
 	for (auto iter = compiledRenderData.begin(); iter != compiledRenderData.end(); iter++)
 	{
-		vertArrays.push_back(iter->second.vertArray);
 		vertBuffers.push_back(iter->second.vertBuffer);
 	}
-	if (!vertArrays.empty())
-		glDeleteVertexArrays(vertArrays.size(), vertArrays.data());
 	if (!vertBuffers.empty())
 		glDeleteBuffers(vertBuffers.size(), vertBuffers.data());
 	compiledRenderData.clear();
@@ -179,21 +176,12 @@ void VUI::Renderer::VidentiAngleRenderer::CompileRender()
 			std::vector<VUI::Renderer::UIVertex>* vertices = i ? &iter->second.textVertices : &iter->second.vertices;
 			TextureID texID = i ? iter->second.fontTextureID : iter->second.textureID;
 			int32_t layer = i ? iter->first + 1 : iter->first;
-			GLuint vertBuffer, vertArray;
-			glGenVertexArrays(1, &vertArray);
+			GLuint vertBuffer;
 			glGenBuffers(1, &vertBuffer);
 			glBindBuffer(GL_ARRAY_BUFFER, vertBuffer);
-			glBufferData(GL_ARRAY_BUFFER, vertices->size() * sizeof(VUI::Renderer::UIVertex), vertices->data(), GL_STATIC_DRAW);
-			glBindVertexArray(vertArray);
-			glVertexAttribPointer(0, 2, GL_FLOAT, false, sizeof(float) * 4 + sizeof(unsigned int), NULL);
-			glEnableVertexAttribArray(0);
-			glVertexAttribIPointer(1, 1, GL_UNSIGNED_INT, sizeof(float) * 4 + sizeof(unsigned int), (void*)(sizeof(float) * 2));
-			glEnableVertexAttribArray(1);
-			glVertexAttribPointer(2, 2, GL_FLOAT, false, sizeof(float) * 4 + sizeof(unsigned int), (void*)(sizeof(float) * 2 + sizeof(unsigned int)));
-			glEnableVertexAttribArray(2);
-			glBindVertexArray(0);
+			glBufferData(GL_ARRAY_BUFFER, vertices->size() * sizeof(VUI::Renderer::UIVertex), vertices->data(), GL_DYNAMIC_DRAW);
 
-			compiledRenderData.insert({ layer,RenderData(std::any_cast<GLuint>(texID),vertArray,vertBuffer,vertices->size()) });
+			compiledRenderData.insert({ layer,RenderData(std::any_cast<GLuint>(texID),vertBuffer,vertices->size()) });
 		}
 	}
 	compiled = true;
@@ -256,6 +244,33 @@ void VUI::Renderer::VidentiAngleRenderer::Init()
 {
 	CreateShader(colorVertShader, colorFragShader, &colorProgramID);
 	CreateShader(textureVertShader, textureFragShader, &textureProgramID);
+
+	SetVertexLayout();
+}
+
+void VUI::Renderer::VidentiAngleRenderer::SetVertexLayout()
+{
+	if (vertArray)
+		glDeleteVertexArrays(1, &vertArray);
+
+	glGenVertexArrays(1, &vertArray);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(vertArray);
+	glBindVertexBuffer(0, 0, 0, sizeof(VUI::Renderer::UIVertex));
+	
+	glEnableVertexAttribArray(0);
+	glVertexAttribFormat(0, 2, GL_FLOAT, false, 0);
+	glVertexAttribBinding(0, 0);
+	
+	glEnableVertexAttribArray(1);
+	glVertexAttribIFormat(1, 1, GL_UNSIGNED_INT, sizeof(float) * 2);
+	glVertexAttribBinding(1, 0);
+	
+	glEnableVertexAttribArray(2);
+	glVertexAttribFormat(2, 2, GL_FLOAT, false, sizeof(float) * 2 + sizeof(unsigned int));
+	glVertexAttribBinding(2, 0);
+
+	vertSize = sizeof(VUI::Renderer::UIVertex);
 }
 
 void VUI::Renderer::VidentiAngleRenderer::StartFrame()

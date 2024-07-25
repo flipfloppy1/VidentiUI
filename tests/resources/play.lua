@@ -1,3 +1,2 @@
 
-ui = nil;
-VUI_nextScript = "resources/end.lua"
+ui.buttons = nil;

@@ -5,33 +5,30 @@ std::map<std::string, VUI::UIElement*> VUI::ParseObjects(lua_State* lua, std::st
 {
 	std::map<std::string, VUI::UIElement*> elements;
 
-	// This assumes "ui" is the first element on the stack, set up by ParseUI()
-	lua_getfield(lua, 1, typeString.c_str());
+	// This assumes the last value added to the stack is the category, set up by ParseUI
 	if (lua_isnil(lua, -1))
 	{
-		lua_pop(lua, 1);
 		return std::map<std::string,VUI::UIElement*>();
 	}
 	else if (!lua_istable(lua, -1))
 	{
-		lua_pop(lua, 1);
 		VUI::Log(VUI::ERROR_MINOR, std::string("Malformed table: \"" + typeString + "\" was not a table").c_str());
 		return std::map<std::string,VUI::UIElement*>();
 	}
 
 	lua_pushnil(lua);
-	while (lua_next(lua, 2) != 0)
+	int index = lua_gettop(lua) - 1;
+	while (lua_next(lua, index) != 0)
 	{
 		if (!lua_isstring(lua, -2))
 		{
-			VUI::Log(VUI::ERROR_MINOR, std::string("UI category \"" + typeString + "\" contained a value, skipping").c_str());
+			VUI::Log(VUI::ERROR_MINOR, std::string("UI element \"" + typeString + "\" was not a string, skipping").c_str());
 			continue;
 		}
 		VUI::UIElement* element = VUI::ParseProperties(lua, -1, lua_tostring(lua, -2));
 		elements.insert({element->id,element});
 		lua_pop(lua, 1);
 	}
-	lua_settop(lua, 1);
 	return elements;
 }
 

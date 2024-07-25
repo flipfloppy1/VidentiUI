@@ -32,23 +32,23 @@ end
 return button
 end
 
-ui.buttons.button1 = tint(ui.buttons.button1, "P");
-ui.buttons.button2 = tint(ui.buttons.button2, "S");
-ui.buttons.button3 = tint(ui.buttons.button3, "Q");
+ui.buttons["1"] = tint(ui.buttons["1"], "P");
+ui.buttons["2"] = tint(ui.buttons["2"], "S");
+ui.buttons["3"] = tint(ui.buttons["3"], "Q");
 
-if (ui.buttons.button1.clicked) then
+if (ui.buttons["1"].clicked) then
     VUI_nextScript = "resources/play.lua"
-    ui.buttons.button1.clicked = false
+    ui.buttons["1"].clicked = false
 end
 
-if (ui.buttons.button2.clicked) then
-    VUI_nextScript = "resources/settings.lua"
-    ui.buttons.button2.clicked = false
+if (ui.buttons["2"].clicked) then
+    VUI_nextScript = "resources/update.lua"
+    ui.buttons["2"].clicked = false
 end
 
-if (ui.buttons.button3.clicked) then
+if (ui.buttons["3"].clicked) then
     VUI_nextScript = "resources/quit.lua"
-    ui.buttons.button3.clicked = false
+    ui.buttons["3"].clicked = false
 end
 
 ui.buttons.timeText.text = "Time played: " .. math.floor(time) .. "s"

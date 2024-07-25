@@ -1,2 +1,2 @@
 
-ui = {};
+ui.buttons = nil;

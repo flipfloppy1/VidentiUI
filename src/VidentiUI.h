@@ -38,7 +38,6 @@ namespace VUI
 		Math::vec2 textPos;
 		int32_t textSize;
 		Math::u8vec4 fontColor;
-		bool ratioTransform[2];
 		int32_t layer;
 		virtual VUI::Renderer::ElementVertices GenVerts();
 	protected:
@@ -68,6 +67,7 @@ namespace VUI
 		void Render();
 		void EndFrame();
 		void ParseUI(const char* filepath);
+		void ParseUI(std::string filepath);
 		void GenUI();
 		void RefreshEvents();
 		void SetLuaGlobals(float deltaTime);

@@ -23,6 +23,11 @@ void VUI::VidentiHandler::EndFrame()
 	uiRenderer->EndFrame();
 }
 
+void VUI::VidentiHandler::ParseUI(std::string filepath)
+{
+	ParseUI(filepath.c_str());
+}
+
 void VUI::VidentiHandler::ParseUI(const char* filepath)
 {
 	std::ifstream f;
@@ -31,6 +36,10 @@ void VUI::VidentiHandler::ParseUI(const char* filepath)
 	if (!f.is_open())
 	{
 		VUI::Log(ERROR_MAJOR, std::string("ParseUI: Unable to find file \"" + std::string(filepath) + "\", returning with empty UI").c_str());
+		for (auto iter = elements.begin(); iter != elements.end(); iter++)
+		{
+			delete iter->second;
+		}
 		elements.clear();
 		return;
 	}
@@ -43,6 +52,10 @@ void VUI::VidentiHandler::ParseUI(const char* filepath)
 	{
 		std::string errorStr = lua_tostring(lua, -1);
 		VUI::Log(ERROR_MAJOR, std::string("ParseUI: Lua was unable to load/run file \"" + std::string(filepath) + "\" with error: \"" + errorStr + "\" returning with empty UI").c_str());
+		for (auto iter = elements.begin(); iter != elements.end(); iter++)
+		{
+			delete iter->second;
+		}
 		elements.clear();
 		return;
 	}
@@ -54,6 +67,10 @@ void VUI::VidentiHandler::ParseUI(const char* filepath)
 	{
 		if (!elements.empty() && uiRenderer != nullptr)
 			uiRenderer->CleanCompiledRender();
+		for (auto iter = elements.begin(); iter != elements.end(); iter++)
+		{
+			delete iter->second;
+		}
 		elements.clear();
 		return;
 	}
@@ -61,21 +78,44 @@ void VUI::VidentiHandler::ParseUI(const char* filepath)
 	if (!lua_istable(lua, -1))
 	{
 		VUI::Log(ERROR_MAJOR, std::string("ParseUI: Variable \'ui\' was not a table in \"" + std::string(filepath) + "\", returning with empty UI").c_str());
+		for (auto iter = elements.begin(); iter != elements.end(); iter++)
+		{
+			delete iter->second;
+		}
 		elements.clear();
 		return;
 	}
 
-	std::map<std::string, UIElement*> newElements;
+	for (auto iter = elements.begin(); iter != elements.end(); iter++) // Clear all elements
+		delete iter->second;
+	elements.clear();
 
-	newElements = ParseObjects(lua, "buttons");
-	for (auto iter = newElements.begin(); iter != newElements.end(); iter++)
+	lua_pushnil(lua);
+	while (lua_next(lua, 1) != 0) // Assumes index 1 is "ui"
 	{
-		elements.insert_or_assign(iter->first, iter->second);
-	}
+		if (!lua_isstring(lua, -2))
+		{
+			VUI::Log(ERROR_MINOR, std::string("ParseUI: Malformed category \"" + std::string(lua_tostring(lua,-2)) + "\", ignoring").c_str());
+			lua_pop(lua, 1);
+			continue;
+		}
+		std::map<std::string, UIElement*> newElements;
 
-	for (auto [id, element] : elements)
-	{
-		element->uiHandler = this;
+		std::string category = lua_tostring(lua, -2);
+		newElements = ParseObjects(lua, category);
+
+		for (auto iter = newElements.begin(); iter != newElements.end(); iter++) // Add new elements
+		{
+			if (elements.contains(iter->first))
+			{
+				VUI::Log(ERROR_MINOR, std::string("Element of id \"" + iter->first + "\"was already created, replacing with newer one from category \"" + category + "\"").c_str());
+				delete elements.at(iter->first);
+			}
+			elements[iter->first] = iter->second;
+			elements[iter->first]->uiHandler = this;
+		}
+
+		lua_pop(lua, 1);
 	}
 
 	lua_settop(lua, 0);
@@ -322,10 +362,7 @@ void VUI::VidentiHandler::CollectLuaSignals()
 
 bool VUI::VidentiHandler::HasSignalled(std::string signal)
 {
-	if (signals.contains(signal))
-		return signals.at(signal);
-
-	return false;
+	return HasSignalled(signal.c_str());
 }
 
 bool VUI::VidentiHandler::HasSignalled(const char* signal)
@@ -338,8 +375,7 @@ bool VUI::VidentiHandler::HasSignalled(const char* signal)
 
 void VUI::VidentiHandler::DisableSignal(std::string signal)
 {
-	if (signals.contains(signal))
-		signals.at(signal) = false;
+	DisableSignal(signal.c_str());
 }
 
 void VUI::VidentiHandler::DisableSignal(const char* signal)

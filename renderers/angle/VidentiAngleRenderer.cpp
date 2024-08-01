@@ -134,6 +134,7 @@ void VUI::Renderer::VidentiAngleRenderer::Render()
 {
 	if (!compiled)
 		CompileRender();
+	glBindVertexArray(vertArray);
 	for (auto iter = compiledRenderData.begin(); iter != compiledRenderData.end(); iter++)
 	{
 		if (iter->second.textureID != 0) // if the element has a texture

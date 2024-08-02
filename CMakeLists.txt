@@ -19,28 +19,24 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 message("VidentiUI: Set build properties")
 
 message("VidentiUI: Adding dependencies...")
-FetchContent_Declare(
-	json 
-	GIT_REPOSITORY https://github.com/nlohmann/json.git
-	GIT_TAG 9cca280a4d0ccf0c08f47a99aa71d1b0e52f8d03 # v3.11.3
-)
+if (VIDENTI_TESTS)
+	FetchContent_Declare(
+		angle
+		URL https://github.com/google/angle/archive/4f23429a1f094d34b7878ba3cb3e3327f2bfa142.zip # latest as of 01/07/2024
+	)
 
-FetchContent_Declare(
-	angle
-	URL https://github.com/google/angle/archive/4f23429a1f094d34b7878ba3cb3e3327f2bfa142.zip # latest as of 01/07/2024
-)
-
-if (WIN32)
-FetchContent_Declare(
-	glfwsrc
-	URL https://github.com/glfw/glfw/releases/download/3.4/glfw-3.4.zip
-)
-else()
-FetchContent_Declare(
-	glfwsrc
-	GIT_REPOSITORY https://github.com/glfw/glfw.git
-	GIT_TAG 7b6aead9fb88b3623e3b3725ebb42670cbe4c579 # glfw 3.4, has to be compiled from source on linux
-)
+	if (WIN32)
+		FetchContent_Declare(
+			glfwsrc
+			URL https://github.com/glfw/glfw/releases/download/3.4/glfw-3.4.zip
+		)
+	else()
+		FetchContent_Declare(
+			glfwsrc
+			GIT_REPOSITORY https://github.com/glfw/glfw.git
+			GIT_TAG 7b6aead9fb88b3623e3b3725ebb42670cbe4c579 # glfw 3.4, has to be compiled from source on linux
+		)
+	endif()
 endif()
 
 FetchContent_Declare(
@@ -81,7 +77,8 @@ endif()
 message("VidentiUI: Added dependencies")
 
 message("VidentiUI: Fetching/compiling dependencies...")
-FetchContent_MakeAvailable(json stb luajit freetype)
+
+FetchContent_MakeAvailable(luajit freetype stb)
 
 if (WIN32 AND NOT (EXISTS "${luajit_SOURCE_DIR}/src/lua51.lib"))
 	execute_process(COMMAND cmd.exe /c "cd ${luajit_SOURCE_DIR}/src/ && msvcbuild.bat static") # this assumes visual studio build tools are available, as msvcbuild.bat requires it

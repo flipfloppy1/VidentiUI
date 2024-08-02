@@ -36,12 +36,12 @@ namespace VUI
 		std::string texture;
 		std::string font;
 		Math::vec2 textPos;
-		int32_t textSize;
+		int32_t textSize = 0;
 		Math::u8vec4 fontColor;
-		int32_t layer;
-		virtual VUI::Renderer::ElementVertices GenVerts();
+		int32_t layer = 0;
+		VUI::Renderer::ElementVertices GenVerts();
 	protected:
-		VidentiHandler* uiHandler;
+		VidentiHandler* uiHandler = nullptr;
 	};
 
 	struct Message

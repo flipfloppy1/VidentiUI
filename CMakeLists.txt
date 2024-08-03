@@ -12,7 +12,6 @@ project("VidentiUI")
 
 message("VidentiUI: Setting build properties...")
 add_compile_definitions(GL_GLEXT_PROTOTYPES GLFW_INCLUDE_NONE)
-set(CMAKE_CXX_FLAGS_RELEASE "/MT")
 set(BUILD_SHARED_LIBS OFF)
 set_property(GLOBAL PROPERTY CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

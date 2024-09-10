@@ -70,7 +70,7 @@ static GLFWwindow* Load()
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 	glfwSetWindowAspectRatio(window, 16, 9);
-	
+
 	glViewport(0, 0, windowWidth, windowHeight);
 
 #ifdef _DEBUG
@@ -130,8 +130,20 @@ static void Input()
 
 }
 
-int main()
+int main(int argc, char* argv[])
 {
+    if (argc > 1)
+    {
+        std::string dirFlag = "--cwd=";
+        std::string flagStr = argv[1];
+        if (flagStr.size() > dirFlag.size() && flagStr.substr(0,dirFlag.size()) == dirFlag)
+        {
+            std::string dir = flagStr.substr(dirFlag.size(),std::string::npos);
+            std::filesystem::current_path(dir);
+            std::cout << dir.c_str() << '\n';
+        }
+    }
+
 	GLFWwindow* window = Load();
 
 	using namespace std::chrono_literals;
@@ -150,7 +162,7 @@ int main()
 	uiHandler.ParseUI("resources/start.lua");
 	uiHandler.GenUI();
 
-	while (!((glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) || shouldQuit))
+	while (!((glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) || shouldQuit || glfwWindowShouldClose(window)))
 	{
 		Input();
 		Update(runTime, deltaTime.count() / 1000.0f);
@@ -161,4 +173,3 @@ int main()
 	}
 	Unload(window);
 }
-

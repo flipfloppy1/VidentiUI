@@ -8,6 +8,7 @@
 #include <vector>
 #include <string>
 #include <utility>
+#include <filesystem>
 #include "Tests.h"
 #include "VidentiUI.h"
 #include "VidentiParse.h"
@@ -33,7 +34,7 @@ static int testWaitSeconds = 2;
 static std::pair<bool, bool> testsPassed[numTests];
 
 // first = started, second = ended
-static std::pair<bool,bool> testsRun[numTests]; 
+static std::pair<bool,bool> testsRun[numTests];
 
 
 static bool shouldQuit = false;

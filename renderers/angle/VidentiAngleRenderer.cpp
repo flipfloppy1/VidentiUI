@@ -1,5 +1,6 @@
 
 #include "VidentiAngleRenderer.h"
+#include <fstream>
 
 const char* colorVertShader =
 "#version 300 es\n"
@@ -209,7 +210,7 @@ void VUI::Renderer::VidentiAngleRenderer::CreateShader(const char* vertShader, c
 
 		VUI::Log(VUI::ERROR_MAJOR, infoLog.c_str());
 	}
-	
+
 	glCompileShader(fragmentID);
 	glGetShaderiv(fragmentID, GL_COMPILE_STATUS, &compiled);
 	if (!compiled)
@@ -258,15 +259,15 @@ void VUI::Renderer::VidentiAngleRenderer::SetVertexLayout()
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(vertArray);
 	glBindVertexBuffer(0, 0, 0, sizeof(VUI::Renderer::UIVertex));
-	
+
 	glEnableVertexAttribArray(0);
 	glVertexAttribFormat(0, 2, GL_FLOAT, false, 0);
 	glVertexAttribBinding(0, 0);
-	
+
 	glEnableVertexAttribArray(1);
 	glVertexAttribIFormat(1, 1, GL_UNSIGNED_INT, sizeof(float) * 2);
 	glVertexAttribBinding(1, 0);
-	
+
 	glEnableVertexAttribArray(2);
 	glVertexAttribFormat(2, 2, GL_FLOAT, false, sizeof(float) * 2 + sizeof(unsigned int));
 	glVertexAttribBinding(2, 0);

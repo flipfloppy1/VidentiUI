@@ -1,8 +1,6 @@
 #pragma once
 
 #include "VidentiUI.h"
-#include "VidentiParse.h"
-#include "VidentiAngleRenderer.h"
 #define WINDOW_WIDTH 2560
 #define WINDOW_HEIGHT 1440
 

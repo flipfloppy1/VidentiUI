@@ -1,19 +1,12 @@
 #pragma once
 
 #include <angle_gl.h>
-#include "EGL/egl.h"
-#include "GLFW/glfw3.h"
-#include <iostream>
 #include <chrono>
 #include <vector>
 #include <string>
 #include <utility>
-#include <filesystem>
 #include "Tests.h"
 #include "VidentiUI.h"
-#include "VidentiParse.h"
-#include "VidentiAngleRenderer.h"
-#include "VidentiGLFWPoller.h"
 
 static std::chrono::seconds runTime;
 
@@ -26,7 +19,7 @@ static std::pair<bool (*)(VUI::VidentiHandler&), bool (*)(VUI::VidentiHandler&)>
 
 static constexpr const int numTests = std::size(testFunctions);
 
-VUI::VidentiHandler uiHandler;
+static VUI::VidentiHandler uiHandler;
 
 static int testWaitSeconds = 2;
 

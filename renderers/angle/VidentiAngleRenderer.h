@@ -2,10 +2,9 @@
 
 #include "VidentiRenderer.h"
 #include "VidentiUI.h"
-#include "angle_gl.h"
 #include "stb_image.h"
-#include <fstream>
 #include <map>
+#include <angle_gl.h>
 
 namespace VUI
 {

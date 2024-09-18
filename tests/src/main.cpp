@@ -1,5 +1,10 @@
 
 #include "main.h"
+#include <filesystem>
+#include <iostream>
+#include <GLFW/glfw3.h>
+#include <VidentiGLFWPoller.h>
+#include <VidentiAngleRenderer.h>
 
 static void printDebug(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length,
 	const GLchar* message, const void* userParam)
@@ -96,15 +101,7 @@ static void Unload(GLFWwindow* window)
 
 static void Update(std::chrono::seconds runTime, float deltaTime)
 {
-	uiHandler.SetLuaGlobals(deltaTime);
-
-	if (uiHandler.GetLuaNextScript() != "")
-	{
-		uiHandler.ParseUI(uiHandler.GetLuaNextScript().c_str());
-		uiHandler.GenUI();
-	}
-
-	uiHandler.CollectLuaSignals();
+    uiHandler.Update(deltaTime);
 }
 
 static void Render(GLFWwindow* window)
@@ -140,7 +137,6 @@ int main(int argc, char* argv[])
         {
             std::string dir = flagStr.substr(dirFlag.size(),std::string::npos);
             std::filesystem::current_path(dir);
-            std::cout << dir.c_str() << '\n';
         }
     }
 

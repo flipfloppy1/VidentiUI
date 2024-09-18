@@ -1,5 +1,6 @@
 
 #include "Tests.h"
+#include <VidentiAngleRenderer.h>
 
 bool VUI::Tests::LoadRendererTest(VidentiHandler& uiHandler)
 {

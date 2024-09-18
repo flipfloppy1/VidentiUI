@@ -65,6 +65,7 @@ namespace VUI
 		void Init();
 		void StartFrame();
 		void Render();
+		void Update(float deltaTime);
 		void EndFrame();
 		void ParseUI(const char* filepath);
 		void ParseUI(std::string filepath);
@@ -79,8 +80,11 @@ namespace VUI
 		void DisableSignal(std::string signal);
 		void DisableSignal(const char* signal);
 		std::string GetLuaNextScript();
+		std::vector<std::string> GetLuaPreScripts();
+		void RunPreScripts();
 
 		std::string nextScript = "";
+		std::vector<std::string> preScripts = {};
 		std::map<std::string, UIElement*> elements;
 		std::map<std::string, bool> signals;
 		inline UIElement* FindElement(std::string id)
@@ -135,4 +139,3 @@ namespace VUI
 		{"text", std::any(std::string(""))}
 	};
 }
-

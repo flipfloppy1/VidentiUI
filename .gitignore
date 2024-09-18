@@ -12,3 +12,4 @@ _deps
 out/
 .vs/**
 !.vs/launch.vs.json
+.cache/**

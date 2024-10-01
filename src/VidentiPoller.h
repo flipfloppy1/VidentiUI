@@ -3,6 +3,7 @@
 #include <map>
 #include <mutex>
 #include <atomic>
+#include <string>
 
 namespace VUI
 {
@@ -22,7 +23,7 @@ namespace VUI
 			bool mouseDownPrev = false;
 		};
 
-		typedef std::map<int, KeyState> KeyMap;
+		typedef std::map<std::string, KeyState> KeyMap;
 
 		class VidentiPoller
 		{

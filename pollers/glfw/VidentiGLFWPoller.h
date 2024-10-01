@@ -20,6 +20,20 @@ namespace VUI
 			public:
 				void MapKey(GLFWwindow* window, int key, int scancode, int action, int mods);
 				VidentiGLFWPoller* uiPoller;
+
+				const std::map<int,std::string> nonPrintableKeys =
+                {
+                    {GLFW_KEY_SPACE, "Space"},
+                    {GLFW_KEY_ENTER, "Enter"},
+                    {GLFW_KEY_BACKSPACE, "Backspace"},
+                    {GLFW_KEY_DELETE, "Delete"},
+                    {GLFW_KEY_ESCAPE, "Escape"},
+                    {GLFW_KEY_TAB, "Tab"},
+                    {GLFW_KEY_LEFT_SUPER, "Super"},
+                    {GLFW_KEY_LEFT_ALT, "Alt"},
+                    {GLFW_KEY_LEFT_CONTROL, "Ctrl"},
+                    {GLFW_KEY_LEFT_SHIFT, "Shift"}
+                };
 			};
 			GLFWCallbackHandler* glfwCallbackPointer;
 		private:

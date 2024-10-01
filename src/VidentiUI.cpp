@@ -359,14 +359,9 @@ void VUI::VidentiHandler::SetLuaGlobals(float deltaTime)
 	lua_getglobal(lua, "VUI_key");
 	int luaKeyIndex = lua_gettop(lua);
 	VUI::Poller::KeyMap keyMap = uiPoller->GetKeyStates();
-	for (unsigned char c = 0; c < 255; c++)
-	{
-		VUI::Poller::KeyState state = {};
-		if (keyMap.contains(c))
-			state = keyMap.at(c);
 
-		std::string keyStr = "";
-		keyStr += c;
+	for (auto& [keyStr,state] : keyMap)
+	{
 		lua_newtable(lua);
 		lua_setfield(lua, luaKeyIndex, keyStr.c_str());
 		lua_getfield(lua, luaKeyIndex, keyStr.c_str());
@@ -380,11 +375,6 @@ void VUI::VidentiHandler::SetLuaGlobals(float deltaTime)
 	}
 
 	lua_pop(lua, 1);
-
-	for (std::string script : preScripts)
-	{
-	   luaL_dofile(lua,script.c_str());
-	}
 }
 
 void VUI::VidentiHandler::CollectLuaSignals()

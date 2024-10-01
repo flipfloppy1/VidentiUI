@@ -124,7 +124,6 @@ void VUI::VidentiHandler::ParseUI(const char* filepath)
 void VUI::VidentiHandler::Update(float deltaTime)
 {
     SetLuaGlobals(deltaTime);
-	RunPreScripts();
 
 	if (GetLuaNextScript() != "")
 	{
@@ -132,7 +131,6 @@ void VUI::VidentiHandler::Update(float deltaTime)
 		GenUI();
 	}
 
-	GetLuaPreScripts();
 	CollectLuaSignals();
 }
 
@@ -295,35 +293,6 @@ std::string VUI::VidentiHandler::GetLuaNextScript()
 	return nextScript;
 }
 
-std::vector<std::string> VUI::VidentiHandler::GetLuaPreScripts()
-{
-
-    lua_getglobal(lua, "VUI_preScript");
-    if (lua_isnil(lua, -1))
-        preScripts = {};
-    else if (lua_istable(lua, -1))
-    {
-        int tableIndex = lua_gettop(lua);
-        lua_pushnil(lua);
-        int i = 0;
-        while (lua_next(lua,tableIndex))
-        {
-            i++;
-            if (lua_isstring(lua, -1))
-                preScripts.push_back(lua_tostring(lua, -1));
-            else
-                VUI::Log(ErrorCode::ERROR_WARNING, std::string("VUI_preScript entry #" + std::to_string(i) + " was not a string, ignoring").c_str());
-
-            lua_pop(lua, 1);
-        }
-        lua_settop(lua, tableIndex);
-    }
-    else
-        VUI::Log(ErrorCode::ERROR_MINOR, "VUI_preScript was neither nil nor a string, ignoring");
-
-    return preScripts;
-}
-
 void VUI::VidentiHandler::SetLuaGlobals(float deltaTime)
 {
 	lua_pushnumber(lua, windowDimensions.x);
@@ -400,12 +369,6 @@ void VUI::VidentiHandler::CollectLuaSignals()
 		signals[lua_tostring(lua, -2)] = lua_toboolean(lua, -1);
 		lua_pop(lua, 1);
 	}
-}
-
-void VUI::VidentiHandler::RunPreScripts()
-{
-    for (std::string script : preScripts)
-        luaL_dofile(lua, script.c_str());
 }
 
 bool VUI::VidentiHandler::HasSignalled(std::string signal)

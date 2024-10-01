@@ -80,8 +80,6 @@ namespace VUI
 		void DisableSignal(std::string signal);
 		void DisableSignal(const char* signal);
 		std::string GetLuaNextScript();
-		std::vector<std::string> GetLuaPreScripts();
-		void RunPreScripts();
 
 		std::string nextScript = "";
 		std::vector<std::string> preScripts = {};

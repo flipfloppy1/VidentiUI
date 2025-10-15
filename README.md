@@ -2,6 +2,11 @@
 
 ### A UI library targeting real-time applications, with elements specified using Lua.
 
+> [!IMPORTANT]
+> VidentiUI is no longer actively developed. While it was a fun project and
+> I learned a lot from it, if I need something like it later I'll probably
+> use a library with a proper layouting system, like [Clay](https://github.com/nicbarker/clay).
+
 Features:
 
 * Custom UI Element types and reactivity built in lua, including:
